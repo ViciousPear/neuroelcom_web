@@ -1,0 +1,39 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}NeuroElcom{% endblock %}</title>
+    <link rel="icon" href="{% static 'images/logo_mini_1.ico' %}" type="image/x-icon">
+    <!-- Подключение CSS -->
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    
+    <!-- Дополнительные блоки для head -->
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    <header>
+        <!-- Общий header для всех страниц -->
+        <div class="logo">
+            <img src="{% static '/images/logo_for_contacts.png' %}" alt="Логотип ЭЛКОМ">
+        </div>
+    </header>
+
+    <main class="main-content">
+        <!-- Основное содержимое страницы -->
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <footer class="site-footer">
+        <!-- Общий footer -->
+        <p>&copy; 1998–2025 ООО «Элком». Все права защищены.</p>
+    </footer>
+
+    <!-- Подключение JavaScript -->
+    {% block scripts %}
+    <script src="{% static 'js/bootstrap.js' %}"></script>
+    {% endblock %}
+</body>
+</html>

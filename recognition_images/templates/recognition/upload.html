@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Загрузка файла | ЭЛКОМ{% endblock %}
+
+{% block content %}
+<div class="upload-container">
+    <form method="post" enctype="multipart/form-data" class="upload-form">
+        {% csrf_token %}
+        <div class="drop-area" id="dropArea" tabindex="0">
+            {{ form.file }}
+            <div class="drop-text">
+                <p>Выберите файл или перетащите сюда</p>
+                <p class="formats">Формат: .png, .jpg, .jpeg, .pdf</p>
+            </div>
+            <div class="processing-indicator">
+                <div class="spinner"></div>
+                {% comment %} <p>Обработка изображения...</p> {% endcomment %}
+            </div>
+        </div>
+        <button type="submit" class="btn-upload">Загрузить</button>
+    </form>
+    
+<div id="pdfModal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal">&times;</span>
+        <h3>Редактирование PDF</h3>
+        <div class="modal-scroll-container">
+        <!-- Контейнер для миниатюр с горизонтальным скроллом -->
+        <div class="thumbnails-scroll-container">
+            <div id="pageThumbnails" class="page-thumbnails"></div>
+        </div>
+        
+        <div class="pdf-main-container">
+            <!-- Основная область просмотра -->
+            <div class="pdf-viewer-container">
+                <div id="pdfPreview" class="pdf-viewer">
+                    <!-- PDF будет рендериться здесь -->
+                </div>
+                
+                <!-- Панель инструментов под областью просмотра -->
+                <div class="pdf-toolbar">
+                    <div class="toolbar-group">
+                        <button id="rotateLeft" class="tool-btn">
+                            <i class="rotate-icon">↻</i> Повернуть
+                        </button>
+                        {% comment %} <button id="resetSelection" class="tool-btn">
+                            <i class="reset-icon">↺</i> Сбросить
+                        </button>  {% endcomment %}
+                    </div>
+                    <div class="page-counter" id="pageCounter">
+                        <span class="pages-total">Страницы (1)</span>
+                        <span class="page-separator">|</span>
+                        <span class="current-page">Стр. 1</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Боковая панель с действиями -->
+            <div class="pdf-sidebar">
+                <div class="sidebar-section">
+                    <h4 class="section-title">Действия</h4>
+                    <div class="pdf-actions">
+                        <button id="convertFullPage" class="action-btn primary">
+                            <i class="send-icon">🡢</i> Отправить страницу
+                        </button>
+                        {% comment %} <button id="convertSelection" class="action-btn secondary">
+                            <i class="select-icon">▦</i> Отправить выделенное
+                        </button> {% endcomment %}
+                    </div>
+                </div>
+                
+                <div class="sidebar-section">
+                    <h4 class="section-title">Настройки</h4>
+                    <div class="format-selector">
+                        <label for="outputFormat" class="format-label">Формат:</label>
+                        <select id="outputFormat" class="format-select">
+                            <option value="png">PNG</option>
+                            <option value="jpg">JPG</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+        </div>
+    </div>
+</div>
+
+    {% if error %}
+    <div class="error-message">
+        {{ error }}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ block.super }}
+<script>
+    // Передаем URL из Django в JavaScript
+    const PROCESS_PDF_URL = "{% url 'process_pdf' %}";
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.12.313/pdf.min.js"></script>  
+<script type="module" src="{% static 'js/main.js' %}"></script>
+{% endblock %}

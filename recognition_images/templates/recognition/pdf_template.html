@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <style>
+       @font-face {
+           font-family: "Manrope";
+           src: url('data:font/truetype;base64,{{ FONT_BASE64 }}') format('truetype');
+           font-weight: 100 900;
+           font-style: normal;
+       }
+       
+       body {
+           font-family: 'Manrope', sans-serif;
+           font-size: 18px;
+           font-weight: 300;
+           margin: 0;
+           padding: 5mm 10mm 15mm 10mm;
+           color: #000000;
+           line-height: 1.6;
+           width: 100%;
+           box-sizing: border-box;
+       }
+       
+       /* Разрывы таблицы между страницами */
+       .table-container {
+           width: 100%;
+           margin: 5mm auto;
+           page-break-inside: auto;
+       }
+       
+       /* Запрет разрывов внутри строк */
+       .product-table tr {
+           page-break-inside: avoid;
+           break-inside: avoid;
+       }
+       
+       /* Повтор заголовоков на каждой странице */
+       .product-table thead {
+           display: table-header-group;
+       }
+       
+       .header-container {
+           display: flex;
+           justify-content: space-between;
+           margin-bottom: 12mm;
+           align-items: flex-start;
+       }
+       
+       .logo-container {
+           width: 52mm;
+           text-align: right;
+       }
+       
+       .logo {
+           max-width: 100%;
+           max-height: 30mm;
+       }
+       
+       .document-title {
+           font-size: 32px;
+           font-weight: 400;
+           margin-bottom: 6mm;
+           text-transform: uppercase;
+           color: #005F71;
+           letter-spacing: 0.5px;
+       }
+
+       .contacts-title {
+           font-size: 32px;
+           font-weight: 400;
+           margin-bottom: 4em;
+           text-transform: uppercase;
+           color: #005F71;
+           letter-spacing: 0.5px;
+       }
+       
+       .document-date {
+           font-size: 20px;
+           margin-bottom: 6mm;
+       }
+       
+       .supplier-info {
+           margin-bottom: 6mm;
+           line-height: 1.6;
+           font-size: 20px;
+       }
+       
+       .supplier-info strong {
+           color: #005F71;
+           font-weight: 400;
+       }
+       
+       .product-table {
+           width: 100%;
+           border-collapse: collapse;
+           font-size: 18px;
+           font-weight: 300;
+           margin-bottom: 6mm;
+           table-layout: fixed;
+       }
+       
+       .table-caption {
+           font-weight: 400;
+           margin-bottom: 4mm;
+           font-size: 20px;
+           text-align: left;
+       }
+       
+       .table-caption span:first-child {
+           color: #FF6C0C;
+       }
+       
+       .table-caption span:last-child {
+           color: #005F71;
+       }
+       
+       .product-table th {
+           padding: 3mm 2mm;
+           border: 0.5px solid rgba(0, 220, 220, 1);
+           font-weight: 400;
+           background-color: #005F71;
+           color: #ffffff;
+           text-align: left;
+           white-space: normal;
+           word-wrap: break-word;
+           line-height: 1.3;
+       }
+       
+       .product-table td {
+           padding: 3mm 2mm;
+           border: 0.5px solid rgba(0, 220, 220, 1);
+           vertical-align: middle;
+           background-color: #ffffff;
+           color: #000000;
+           text-align: left;
+           word-wrap: break-word;
+       }
+       
+       .number-column {
+           width: 5%;
+           text-align: center;
+           color: #005F71;
+           font-weight: 400;
+       }
+       
+       .name-column {
+           width: 71%;
+           text-align: left;
+       }
+       
+       .price-column {
+           width: 14%;
+           text-align: right;
+       }
+       
+       .quantity-column {
+           width: 10%;
+           text-align: center;
+       }
+       
+       {% comment %} .total-column {
+           width: 15%;
+           text-align: right;
+       } {% endcomment %}
+       
+       .total-summary {
+           text-align: right;
+           margin-top: 4mm;
+           font-size: 20px;
+           font-weight: 300;
+       }
+       
+       .total-summary span:first-child {
+           color: #FF6C0C;
+           font-weight: 400;
+       }
+       
+       .total-summary span:last-child {
+           color: #005F71;
+       }
+       
+       .terms-section {
+           margin-top: 6mm;
+           font-size: 20px;
+           line-height: 1.6;
+       }
+       
+       .terms-section strong {
+           color: #005F71;
+           font-weight: 400;
+           font-size: 22px;
+       }
+
+       .page-break {
+            page-break-before: always;
+            margin-top: 40px;
+        }
+         .contacts-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+        }
+        .contacts-table td {
+            vertical-align: middle; /* Изменили с top на middle */
+            padding: 0;
+            border: none;
+        }
+        .photo_contacts {
+            width: 100px;
+            height: 120px;
+            border: 1px solid #ddd;
+            object-fit: cover;
+            margin-right: 20px;
+            display: block; /* Добавили для лучшего контроля */
+        }
+
+        .contact-info {
+            padding-left: 20px;
+        }
+        
+        .contact-info h3 {
+            margin: 0 0 10px 0;
+            font-size: 20px;
+            font-weight: 400;
+            color: #005F71;
+        }
+        .contact-info p {
+            margin: 5px 0;
+            font-size: 18px;
+            line-height: 1.4;
+        }
+
+        .main {
+           padding-bottom: 50mm; /* Отступ для футера + 5 отступов */
+       }
+       
+        .footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            font-size: 10px;
+            font-weight: 300;
+            color: #005F71;
+            border-top: 1px solid #ddd;
+            padding: 3mm 0;
+            background-color: white;
+            text-align: center;
+        }
+        
+        .footer-container {
+            display: inline-block;
+            margin: 0 auto;
+            max-width: 800px;
+            text-align: left;
+        }
+        
+        .footer-table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        
+        .footer-logo-cell {
+            width: 150px;
+            vertical-align: middle;
+            padding-right: 20px;
+            border-right: 1px solid #FF6C0C;
+        }
+        
+        .footer-logo {
+            width: 130px;
+            height: auto;
+        }
+        
+        .footer-contacts {
+            vertical-align: middle;
+            font-size: 12px;
+            line-height: 1.5;
+            padding-left: 20px; /* Отступ от границы */
+        }
+        
+        .footer-contacts p {
+            margin: 4px 0;
+        }
+
+    </style>
+</head>
+<body>
+    <main>
+    <div class="header-container">
+        <div class="logo-container">
+            <img class="logo" src="data:image/png;base64,{{ LOGO_BASE64 }}" alt="Логотип компании">
+        </div>
+        <div class="header-text">
+            <div class="document-title">Технико-коммерческое предложение</div>
+            <div class="document-date">от {% now "d.m.Y" %}</div>
+            <div class="supplier-info">
+                <strong>Поставщик:</strong>
+                Общество с ограниченной ответственностью «Элком»,
+                192102,<br>г. Санкт-Петербург,
+                ул. Витебская Сортировочная, д. 34, стр. 3
+            </div>
+        </div>
+    </div>
+    
+    <div class="table-caption">
+        <span>Таблица 1.</span> <span>Перечень поставляемого оборудования и услуг</span>
+    </div>
+    
+    <div class="table-container">
+        <table class="product-table">
+            <thead>
+                <tr>
+                    <th class="number-column">№</th>
+                    <th class="name-column">Наименование</th>
+                    <th class="price-column">Стоимость за 1 ед., руб.</th>
+                    <th class="quantity-column">Кол-во, шт</th>
+                    {% comment %} <th class="total-column">Общая стоимость, руб.</th> {% endcomment %}
+                </tr>
+            </thead>
+                <tbody>
+                    {% for category in data.categories %}
+                        {% for element in category.elements %}
+                            <tr>
+                                <td class="number-column">{{ element.number }}</td>
+                                <td class="name-column">{{ element.name }}</td>
+                                <td class="price-column">{{ element.price }}</td>
+                                <td class="quantity-column">{{ element.quantity|default:"1" }}</td>
+                                {% comment %} <td class="total-column">{{ element.total }}</td> {% endcomment %}
+                            </tr>
+                        {% endfor %}
+                    {% endfor %}
+                </tbody>
+        </table>
+    </div>
+    
+    <div class="total-summary">
+        <span>Итого:</span> <span>{{ data.total_without_vat|default:data.total }}</span>
+    </div>
+    <div class="total-summary">
+        <span>НДС 20%:</span> <span>{{ data.vat_amount|default:"0.00 руб." }}</span>
+    </div>
+    <div class="total-summary">
+        <span>Стоимость с НДС:</span> <span>{{ data.total_with_vat|default:data.total }}</span>
+    </div>
+    
+    <!-- Контакты на новой странице -->
+    <div class="page-break">
+        <div class="contacts-title">Контактная информация</div>
+        {% comment %} <table class="contacts-table">
+            <tr>
+                <td width="120">
+                    <img class="photo_contacts" src="data:image/png;base64,{{ MANAGER_BASE64 }}" alt="Менеджер проекта">
+                </td>
+                <td>
+                    <div class="contact-info">
+                        <h3>Менеджер отдела продаж:</h3>
+                        <p>Петрова Антонина Дмитриевна</p>
+                        <p>тел: (812) 320-88-81 доб. 3062</p>
+                        <p>e-mail: a.petrova@elcomspb.ru</p>
+                    </div>
+                </td>
+            </tr>
+        </table>
+        <div style="height: 10mm;"></div>
+        <table class="contacts-table">
+            <tr>
+                <td width="120">
+                    <img class="photo_contacts" src="data:image/png;base64,{{ ENGINEER_BASE64 }}" alt="Главный инженер проекта">
+                </td>
+                <td>
+                    <div class="contact-info">
+                        <h3>Главный инженер проекта:</h3>
+                        <p>Кононученко Дмитрий Павлович</p>
+                        <p>тел: (812) 320-88-81 доб. 1138</p>
+                        <p>e-mail: d.kononuchenko@elcomspb.ru</p>
+                    </div>
+                </td>
+            </tr>
+        <div class="footer">
+        </table> {% endcomment %}
+    </main>
+    <div style="height: 270mm;"></div>
+    </div>
+      <div class="footer">
+        <div class="footer-container">
+            <table class="footer-table">
+                <tr>
+                    <td class="footer-logo-cell">
+                        <img class="footer-logo" src="data:image/png;base64,{{ LOGO_BASE64 }}" alt="Логотип компании">
+                    </td>
+                    <td class="footer-contacts">
+                        <p>Телефон/факс (812) 320-88-81, www.elcomspb.ru, e-mail: spb@elcomspb.ru</p>
+                        <p>ООО "Элком", 192102, Санкт-Петербург, ул. Витебская Сортировочная, д. 34, лит. И, офис 38</p>
+                        <p>ИНН/КПП 7804079187/781601001, ОГРН 1037808003507, ОКПО 49016308, ОКВЭД 46.69.9</p>
+                        <p>р/с 40702810955100185891 в СЕВЕРО-ЗАПАДНЫЙ БАНК ПАО СБЕРБАНК</p>
+                        <p>к/с 30101810500000000653, БИК 044030653</p>
+                    </td>
+                </tr>
+            </table>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

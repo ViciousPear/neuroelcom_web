@@ -1,0 +1,183 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Результаты распознавания</title>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" href="{% static 'images/logo_mini_1.ico' %}" type="image/x-icon">
+    <link rel="stylesheet" href="{% static 'css/results.css' %}">
+</head>
+<header>
+        <div class="logo">
+            <img src="{% static '/images/logo_for_contacts.png' %}" alt="Логотип ЭЛКОМ">
+        </div>
+ </header>
+<body>
+    <main class="main-content">
+        <h1>Результаты распознавания</h1>
+    <div class="container">
+        <!-- Выше изображение -->
+        <div class="image-column">
+        {% if result_image_url %}
+        {% comment %} <div class="image-wrapper"> {% endcomment %}
+            <img src="{{ result_image_url }}" alt="Результат распознавания" class="zoomable-image">
+            <button class="zoom-btn" title="Увеличить изображение"></button>
+        {% comment %} </div> {% endcomment %}
+        <!-- Модальное окно с элементами управления -->
+        <div class="modal-overlay" id="image-modal">
+            <div class="modal-content">
+                <div class="image-wrapper">
+                    <span class="close-modal">&times;</span>
+                    <img src="" alt="Увеличенное изображение" id="modal-image">
+                </div>
+                <div class="zoom-controls">
+                    <button class="zoom-in-btn" title="Увеличить">+</button>
+                    <button class="zoom-reset-btn" title="Сбросить">100%</button>
+                    <button class="zoom-out-btn" title="Уменьшить">-</button>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <p>Изображение не найдено</p>
+        {% endif %}
+    </div>
+        <!-- Ниже результаты распознавания -->
+        <div class="results-column">
+            
+            {% if error %}
+                <div class="error">{{ error }}</div>
+                <div class="actions">
+                    <button id="back" class="back-btn">Назад</button>
+                </div>
+            {% else %}
+                <div id="results-container">
+                    {% for category in categories %}
+                    <div class="category-section">
+                        <div class="category-header">{{ category.name }}</div>
+                        <div class="elements-container">
+                        {% if category.is_grouped %}
+                        <div class="actions">
+                                <button id="add" class="add-btn">+</button>
+                            </div>
+                            {% for group in category.groups %}
+                            <div class="element-group">
+                                <div class="combobox-row-grouped">
+                                    <!-- Артикул -->
+                                    <div>{{ forloop.counter}}.</div>
+                                    <div class="combobox-group">
+                                        <label>Артикул</label>
+                                        <select class="combobox combobox-art" data-linked="name price">
+                                            {% for option in group.article_options %}
+                                            <option value="{{ option.value }}">{{ option.text }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    
+                                    <!-- Название -->
+                                    <div class="combobox-group">
+                                        <label>Название</label>
+                                        <select class="combobox combobox-name" data-linked="article price">
+                                            {% for option in group.name_options %}
+                                            <option value="{{ option.value }}">{{ option.text }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    
+                                    <!-- Цена -->
+                                    <div class="combobox-group">
+                                        <label>Цена</label>
+                                        <select class="combobox combobox-price" data-linked="article name">
+                                            {% for option in group.price_options %}
+                                            <option value="{{ option.value }}">{{ option.text }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="actions">
+                                        <button id="delete" class="delete-btn">x</button>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                        <div class="actions">
+                                <button id="add" class="add-btn">+</button>
+                            </div>
+                            {% for group in category.groups %}
+                            <div class="element-group">
+                                <div class="combobox-row">
+                                    <div>{{ forloop.counter}}.</div>
+                                    <!-- Артикул -->
+                                    <div class="combobox-group">
+                                        <label>Артикул</label>
+                                        <select class="combobox combobox-art" data-linked="name price">
+                                            {% for option in group.article_options %}
+                                            <option value="{{ option.value }}">{{ option.text }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    
+                                    <!-- Название -->
+                                    <div class="combobox-group">
+                                        <label>Название</label>
+                                        <select class="combobox combobox-name" data-linked="article price">
+                                            {% for option in group.name_options %}
+                                            <option value="{{ option.value }}">{{ option.text }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+
+                                     <!-- Количество подгрупп -->
+                                    <div class="combobox-group">
+                                        <label>Количество</label>
+                                            <input type="number" min="1" value="{{ group.group_count|default:1 }}" class="group-count-input">
+                                    </div>
+                                    
+                                    <!-- Цена -->
+                                    <div class="combobox-group">
+                                        <label>Цена</label>
+                                        <select class="combobox combobox-price" data-linked="article name">
+                                            {% for option in group.price_options %}
+                                            <option value="{{ option.value }}">{{ option.text }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="actions">
+                                        <button id="delete" class="delete-btn">x</button>
+                                    </div>
+                                </div>
+                            </div>
+                             {% endfor %}
+                            {% endif %} 
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                <div class="actions">
+                    <button id="back" class="back-btn">Назад</button>
+                    <button id="create-pdf" class="pdf-btn">Создать PDF</button>
+                </div>
+            {% endif %}
+        </div>
+</main>
+<script>
+    window.recognitionData = {{ original_data_json|safe }};
+    console.log("Данные инициализированы:", Object.keys(window.recognitionData));
+    console.log("Детальная проверка данных:", {
+        automatic: window.recognitionData.automatic?.length,
+        transformer: window.recognitionData.transformer?.length,
+        counter: window.recognitionData.counter?.length,
+        automaticSample: window.recognitionData.automatic?.[0],
+        transformerSample: window.recognitionData.transformer?.[0],
+        counterSample: window.recognitionData.counter?.[0]
+    });
+</script>   
+<script type="module" src="{% static 'js/results.js' %}"></script>  
+
+
+</body>
+ <footer class="site-footer">
+        <p>&copy; 1998–2025 ООО «Элком». Все права защищены.</p>
+</footer>
+</html>
