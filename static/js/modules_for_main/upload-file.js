@@ -49,7 +49,7 @@ export class FileUploadHandler {
             
             // Отправка запроса с таймаутом
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 30000);
+            const timeoutId = setTimeout(() => controller.abort(), 300000);
             
             const response = await fetch('/process-pdf/', {
                 method: 'POST',
@@ -138,7 +138,7 @@ export class FileUploadHandler {
             
             // Отправка запроса с таймаутом
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 30000);
+            const timeoutId = setTimeout(() => controller.abort(), 300000);
             
             const response = await fetch(processPdfUrl, {
                 method: 'POST',
