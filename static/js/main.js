@@ -38,19 +38,69 @@ document.addEventListener('DOMContentLoaded', function() {
         dropArea.addEventListener(eventName, fileUploadHandler.unhighlight, false);
     });
 
+    // Функция валидации файла
+    function validateFile(file) {
+        // Проверка наличия файла
+        if (!file) {
+            throw new Error('Файл не выбран');
+        }
+
+        // Проверка расширения
+        const ext = file.name.split('.').pop().toLowerCase();
+        const allowedExtensions = ['png', 'jpg', 'jpeg', 'pdf', 'bmp', 'webp'];
+        
+        if (!allowedExtensions.includes(ext)) {
+            throw new Error('INVALID_FORMAT');
+        }
+
+        // Проверка размера (10MB)
+        const maxSize = 10 * 1024 * 1024;
+        if (file.size > maxSize) {
+            throw new Error('FILE_TOO_LARGE');
+        }
+
+        // Дополнительная проверка типа
+        if (file.type && file.type !== 'application/octet-stream') {
+            const allowedTypes = [
+                'image/png', 
+                'image/jpeg', 
+                'image/jpg', 
+                'image/bmp',
+                'image/webp',
+                'application/pdf'
+            ];
+            
+            if (!allowedTypes.includes(file.type)) {
+                throw new Error('INVALID_TYPE');
+            }
+        }
+
+        return true;
+    }
+
     // Обработка сброса файлов
     function handleDrop(e) {
         const files = e.dataTransfer.files;
         if (files.length) {
-            // Создание нового FileList
-            const dataTransfer = new DataTransfer();
-            for (let i = 0; i < files.length; i++) {
-                dataTransfer.items.add(files[i]);
+            try {
+                validateFile(files[0]);
+                
+                // Создание нового FileList
+                const dataTransfer = new DataTransfer();
+                for (let i = 0; i < files.length; i++) {
+                    dataTransfer.items.add(files[i]);
+                }
+                fileInput.files = dataTransfer.files;
+                
+                // Обновление UI
+                fileUploadHandler.updateFileText(files[0].name);
+                fileUploadHandler.clearMessages();
+                
+            } catch (error) {
+                fileUploadHandler.handleProcessError(error);
+                // Очищаем input при ошибке
+                fileInput.value = '';
             }
-            fileInput.files = dataTransfer.files;
-            
-            // Обновление UI
-            fileUploadHandler.updateFileText(files[0].name);
         }
     }
     dropArea.addEventListener('drop', handleDrop, false);
@@ -58,7 +108,14 @@ document.addEventListener('DOMContentLoaded', function() {
     // Обработка выбора файла через диалог
     fileInput.addEventListener('change', function() {
         if (this.files.length) {
-            fileUploadHandler.updateFileText(this.files[0].name);
+            try {
+                validateFile(this.files[0]);
+                fileUploadHandler.updateFileText(this.files[0].name);
+                fileUploadHandler.clearMessages();
+            } catch (error) {
+                fileUploadHandler.handleProcessError(error);
+                this.value = ''; // Очищаем input при ошибке
+            }
         }
     });
 
@@ -97,11 +154,21 @@ document.addEventListener('DOMContentLoaded', function() {
         
         if (!fileInput.files.length) {
             fileUploadHandler.showMessage('Пожалуйста, выберите файл', 'error');
-            showToast('Пожалуйста, выберите файл', 'warning', 'Предупреждение')
+            showToast('Пожалуйста, выберите файл', 'warning', 'Предупреждение');
             return;
         }
         
         const file = fileInput.files[0];
+        
+        try {
+            // ВАЛИДАЦИЯ ФАЙЛА ПЕРЕД ОТПРАВКОЙ
+            validateFile(file);
+            
+        } catch (error) {
+            fileUploadHandler.handleProcessError(error);
+            return; // Прерываем отправку при ошибке валидации
+        }
+        
         fileUploadHandler.recognitionState.currentFile = file;
         
         // Сброс предыдущих результатов
@@ -109,7 +176,7 @@ document.addEventListener('DOMContentLoaded', function() {
         document.querySelector('.results-container')?.remove();
         
         // Обработка PDF
-        if (file.type === 'application/pdf') {
+        if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
             try {
                 await loadPdfJs();
                 await pdfHandler.showPdfPageSelector(file);
@@ -164,36 +231,33 @@ document.addEventListener('DOMContentLoaded', function() {
                             }
                         });
                         
-                    
-
                         if (!response.ok) {
-                    const errorData = await response.json().catch(() => ({}));
-                    
-                    switch (response.status) {
-                        case 400:
-                            if (errorData.error === 'no_elements_detected') {
-                                throw new Error('NO_ELEMENTS_FOUND');
+                            const errorData = await response.json().catch(() => ({}));
+                            
+                            switch (response.status) {
+                                case 400:
+                                    if (errorData.error === 'no_elements_detected') {
+                                        throw new Error('NO_ELEMENTS_FOUND');
+                                    }
+                                    throw new Error(errorData.message || 'Неверный запрос к серверу');
+                                
+                                case 413:
+                                    throw new Error('Размер файла слишком большой');
+                                
+                                case 500:
+                                    if (errorData.error === 'no_elements_detected') {
+                                        throw new Error('NO_ELEMENTS_FOUND');
+                                    }
+                                    throw new Error('Внутренняя ошибка сервера');
+                                
+                                case 502:
+                                case 503:
+                                case 504:
+                                    throw new Error('CONNECTION_ERROR');
+                                default:
+                                    throw new Error(`Ошибка сервера: ${response.status}`);
                             }
-                            throw new Error(errorData.message || 'Неверный запрос к серверу');
-                        
-                        case 413:
-                            throw new Error('Размер файла слишком большой');
-                        
-                        case 500:
-                            if (errorData.error === 'no_elements_detected') {
-                                throw new Error('NO_ELEMENTS_FOUND');
-                            }
-                            throw new Error('Внутренняя ошибка сервера');
-                        
-                        case 502:
-                        case 503:
-                        case 504:
-                            throw new Error('CONNECTION_ERROR');
-                        
-                        default:
-                            throw new Error(`Ошибка сервера: ${response.status}`);
-                    }
-                }
+                        }
                         
                         const data = await response.json();
                         if (data.redirect_url) {
@@ -208,9 +272,6 @@ document.addEventListener('DOMContentLoaded', function() {
                         fileUploadHandler.endProcessing();
                     }
                 }, `image/${outputFormat.value}`, 0.9);
-
-                
-            
 
                 pdfHandler.closeModalHandler();
             } catch (error) {
@@ -232,6 +293,5 @@ document.addEventListener('DOMContentLoaded', function() {
     // Пытаемся предзагрузить PDF.js при инициализации
     loadPdfJs().catch(error => {
         console.warn('Не удалось предзагрузить PDF.js:', error);
-        fileUploadHandler.handleProcessError(error);
     });
 });

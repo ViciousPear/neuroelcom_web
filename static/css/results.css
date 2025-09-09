@@ -1,14 +1,56 @@
     body {
-        font-family: 'Manrope', sans-serif;
-        margin: 0;
-        padding: 20px;
-        background: url('../images/Computer. Tab1_beta.png') center/contain no-repeat;
-        background-size: cover;
-        display: flex;
-        flex-direction: column;
-        min-height: 100vh;
-        margin: 0;
+    font-family: 'Manrope', sans-serif;
+    margin: 0;
+    padding: 20px;
+    background: url('../images/Computer. Tab1_beta.png') center/cover no-repeat;
+    background-size: cover;
+    background-attachment: fixed;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Медиа-запросы для адаптивности */
+@media (max-width: 1200px) {
+    body {
+        padding: 15px;
     }
+}
+
+@media (max-width: 768px) {
+    body {
+        padding: 10px;
+        background: url('../images/Computer. Tab1_beta.png') center/cover no-repeat;
+        background-size: cover;
+        background-attachment: scroll;
+    }
+    
+    .container {
+        gap: 15px;
+    }
+}
+
+@media (max-width: 480px) {
+    body {
+        padding: 5px;
+        background: url('../images/Computer. Tab1_beta.png') center/cover no-repeat;
+        background-size: cover;
+    }
+    
+    .image-column {
+        max-height: 500px;
+        padding: 8px;
+    }
+    
+    .category-section {
+        border-radius: 15px;
+    }
+    
+    .combobox-row,
+    .combobox-row-grouped {
+        gap: 10px;
+    }
+}
 
     .logo img{
         width: 250px;  /* или auto, если нужно сохранить пропорции */

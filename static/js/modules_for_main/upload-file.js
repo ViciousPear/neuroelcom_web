@@ -240,6 +240,12 @@ export class FileUploadHandler {
                 errorMessage = 'На изображении не обнаружено соответствующих элементов. Пожалуйста, попробуйте другое изображение.';
                 errorType = 'no-elements';
                 break;
+
+            case 'INVALID_TYPE':
+            case 'INVALID_FORMAT':
+                errorMessage = 'Неверный тип файла. Принимаются изображения формата .png, .jpg, .jpeg, а также файлы .pdf';
+                errorType = 'file-error';
+                break;
                 
             case 'CONNECTION_ERROR':
                 errorMessage = 'Отсутствует интернет-соединение или сервер недоступен. Проверьте подключение к интернету и попробуйте снова.';
@@ -257,6 +263,7 @@ export class FileUploadHandler {
                 break;
                 
             case 'Размер файла слишком большой':
+            case 'FILE_TOO_LARGE':
                 errorMessage = 'Размер файла превышает допустимый лимит. Пожалуйста, выберите файл меньше 10 МБ.';
                 errorType = 'file-error';
                 break;
