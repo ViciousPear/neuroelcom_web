@@ -7,3 +7,6 @@ neuroelcom_web/__pycache__
 recognition_images/__pycache__
 **/__pycache__
 .venv/
+neuroelcom_web/*.env
+neuroelcom_web/.env
+.env
