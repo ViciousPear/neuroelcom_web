@@ -1,0 +1,309 @@
+/* Сброс стилей */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
+.registration-wrapper {
+    width: 100vw;
+    height: 100vh;
+    position: relative;
+    background: url('../images/elcom_graphic7.png') center/cover no-repeat;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.registration-page {
+    all: initial;
+    display: block;
+    font-family: 'Manrope', sans-serif;
+    width: 600px;
+    margin-left: 10%;
+    margin-top: 40px;
+    background: white;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0px 2px 15px rgba(0, 0, 0, 0.15);
+    border: 1px solid rgba(42, 113, 121, 0.3);
+    z-index: 2;
+    position: relative;
+}
+
+.registration-page * {
+    all: revert;
+    box-sizing: border-box;
+}
+
+/* Контейнер формы */
+.registration-form-container {
+    padding: 25px 35px 30px 35px;
+    background: white;
+}
+
+.registration-form {
+    width: 100%;
+    margin: 0 auto;
+}
+
+/* Контейнер для заголовка и ошибок */
+.title-container {
+    position: relative;
+    min-height: 60px; /* Фиксированная высота для заголовка и ошибок */
+    margin-bottom: 18px;
+}
+
+.registration-title {
+    font-family: 'Manrope', sans-serif;
+    font-style: normal;
+    font-weight: 500;
+    font-size: 24px;
+    line-height: 140%;
+    text-align: center;
+    color: #2e3536;
+    margin: 0;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+}
+
+/* Общие ошибки формы (не связанные с конкретным полем) */
+.form-errors {
+    position: absolute;
+    top: 30px; /* Располагаем под заголовком */
+    left: 0;
+    width: 100%;
+    color: #dc3545;
+    font-size: 12px;
+    text-align: center;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.form-errors li {
+    margin-bottom: 3px;
+}
+
+.form-row {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.form-group {
+    flex: 1;
+    position: relative; /* Для позиционирования ошибок */
+}
+
+.form-group label {
+    display: block;
+    font-family: 'Manrope', sans-serif;
+    font-style: normal;
+    font-weight: 400;
+    font-size: 13px;
+    line-height: 140%;
+    color: rgba(30, 30, 30, 0.8);
+    margin-bottom: 4px;
+}
+
+.form-group input {
+    box-sizing: border-box;
+    display: block;
+    width: 100%;
+    padding: 10px 12px;
+    background: #FFFFFF;
+    border: 1px solid #D9D9D9;
+    border-radius: 8px;
+    font-family: 'Manrope', sans-serif;
+    font-size: 13px;
+    height: 38px;
+    transition: all 0.3s ease;
+}
+
+/* Стили для полей с ошибкой */
+.form-group.input-error input {
+    border-color: #dc3545;
+    background-color: #fff8f8;
+}
+
+.form-group.input-error input:focus {
+    border-color: #dc3545;
+    box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.2);
+}
+
+/* Стили для полей без ошибки (возврат к обычному виду) */
+.form-group input:not(.error):valid {
+    border-color: #D9D9D9;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: #2A7179;
+    box-shadow: 0 0 0 2px rgba(42, 113, 121, 0.2);
+}
+
+.form-group input::placeholder {
+    color: #aaa;
+    font-size: 12px;
+}
+
+/* Контейнер для ошибок поля - абсолютное позиционирование */
+.field-errors {
+    position: absolute;
+    top: 100%; /* Располагаем сразу под полем */
+    left: 0;
+    width: 100%;
+    z-index: 10;
+}
+
+.error-message {
+    color: #dc3545;
+    font-size: 10px;
+    margin-top: 2px;
+    font-family: 'Manrope', sans-serif;
+    line-height: 1.2;
+    background: white;
+    padding: 2px 4px;
+    border-radius: 4px;
+}
+
+.register-button {
+    box-sizing: border-box;
+    display: block;
+    width: 180px;
+    height: 38px;
+    margin: 25px auto 5px; /* Увеличен отступ сверху для учета ошибок */
+    background: #2A7179;
+    border: 1px solid #2A7179;
+    border-radius: 6px;
+    font-family: 'Manrope', sans-serif;
+    font-style: normal;
+    font-weight: 700;
+    font-size: 14px;
+    line-height: 140%;
+    color: #F5F5F5;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.register-button:hover {
+    background: #1e555b;
+}
+
+/* Футер с копирайтом */
+.footer {
+    width: 100%;
+    text-align: center;
+    padding: 15px 0;
+    margin-bottom: 25px;
+    box-sizing: border-box;
+    background: transparent;
+    color: #333;
+    text-shadow: 0 1px 2px rgba(255, 255, 255, 0.5);
+    font-family: 'Manrope', sans-serif;
+    font-size: 13px;
+    font-weight: 400;
+    z-index: 2;
+    pointer-events: none;
+}
+
+.footer p {
+    margin: 0;
+    padding: 0;
+    display: inline-block;
+}
+
+/* Адаптивность */
+@media (max-width: 1200px) {
+    .registration-page {
+        width: 800px;
+    }
+}
+
+@media (max-width: 768px) {
+    .registration-page {
+        width: 90%;
+        margin-left: 5%;
+        margin-right: 5%;
+        margin-top: 30px;
+    }
+    
+    .registration-form-container {
+        padding: 20px 20px 25px 20px;
+    }
+    
+    .form-row {
+        flex-direction: column;
+        gap: 10px;
+        margin-bottom: 12px;
+    }
+    
+    .title-container {
+        min-height: 50px;
+    }
+    
+    .form-errors {
+        top: 25px;
+        font-size: 10px;
+    }
+    
+    .error-message {
+        font-size: 9px;
+    }
+    
+    .footer {
+        font-size: 11px;
+        padding: 10px 0;
+    }
+}
+
+/* Добавьте эти стили в конец register.css */
+
+/* Увеличенная высота для заголовка с ошибками */
+.title-container {
+    min-height: 80px;
+}
+
+/* Общие ошибки формы */
+.form-errors {
+    position: absolute;
+    top: 35px;
+    left: 0;
+    width: 100%;
+    color: #dc3545;
+    font-size: 14px;
+    font-weight: 500;
+    text-align: center;
+    list-style: none;
+    padding: 8px 0;
+    margin: 0;
+    background-color: rgba(220, 53, 69, 0.05);
+    border-radius: 6px;
+}
+
+/* Стили для полей с ошибкой */
+.form-group.input-error input {
+    border-color: #dc3545;
+    background-color: #fff8f8;
+}
+
+.form-group.input-error input:focus {
+    border-color: #dc3545;
+    box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.2);
+}
+
+/* Увеличен размер ошибок */
+.error-message {
+    font-size: 11px;
+    color: #dc3545;
+}

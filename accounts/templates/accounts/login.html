@@ -1,0 +1,78 @@
+{% extends 'base_clean.html' %}
+{% load static %}
+
+{% block title %}Вход в систему{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/login.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="login-wrapper">
+    <div class="login-page">
+        <div class="login-form-container">
+            <div class="login-form">
+                <div class="title-container">
+                    <h2 class="login-title">Вход в систему</h2>
+                    
+                    <!-- Ошибки формы (не связанные с конкретным полем) -->
+                    {% if form.non_field_errors %}
+                        <div class="form-errors">
+                            {% for error in form.non_field_errors %}
+                                <div class="error-message">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <form method="post" novalidate>
+                    {% csrf_token %}
+                    
+                    <!-- Email или Имя пользователя -->
+                    <div class="form-group {% if form.username.errors %}input-error{% endif %}">
+                        <label for="{{ form.username.id_for_label }}">Email или имя пользователя</label>
+                        {{ form.username }}
+                        {% if form.username.errors %}
+                            <div class="field-errors">
+                                {% for error in form.username.errors %}
+                                    <div class="error-message">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Пароль -->
+                    <div class="form-group {% if form.password.errors %}input-error{% endif %}">
+                        <label for="{{ form.password.id_for_label }}">Пароль</label>
+                        {{ form.password }}
+                        {% if form.password.errors %}
+                            <div class="field-errors">
+                                {% for error in form.password.errors %}
+                                    <div class="error-message">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Забыли пароль? -->
+                    <div class="forgot-password">
+                        <a href="{% url 'password_reset' %}" class="forgot-password-link">Забыли пароль?</a>
+                    </div>
+                    
+                    <button type="submit" class="login-button">Войти</button>
+                </form>
+                
+                <!-- Ссылка на регистрацию -->
+                <div class="register-link">
+                    <p>Нет аккаунта? <a href="{% url 'register' %}">Зарегистрироваться</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Футер с копирайтом -->
+    <div class="footer">
+        <p>© 1998–2026 ООО «Элком». Все права защищены.</p>
+    </div>
+</div>
+{% endblock %}

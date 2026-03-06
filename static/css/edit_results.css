@@ -1,0 +1,1118 @@
+/* static/css/edit_results.css */
+
+/* Основные стили страницы */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Manrope', sans-serif;
+    margin: 0;
+    padding: 20px;
+    background: url('../images/Computer. Tab1_beta.png') center/cover no-repeat;
+    background-size: cover;
+    background-attachment: fixed;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Логотип */
+.logo {
+    text-align: left;
+    margin-bottom: 20px;
+}
+
+.logo img {
+    width: 250px;
+    height: auto;
+    max-width: 100%;
+}
+
+/* Главный контент */
+.main-content {
+    flex: 1;
+    width: 100%;
+    max-width: 1300px;
+    margin: 0 auto;
+    padding: 0 20px 20px;
+}
+
+/* Заголовок страницы */
+h1 {
+    color: #2A7179;
+    text-align: center;
+    margin-bottom: 30px;
+    font-size: 28px;
+    font-weight: 700;
+}
+
+/* Контейнер с содержимым */
+.container {
+    max-width: 1300px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column; 
+    gap: 20px;
+    padding-bottom: 20px;
+    align-items: center;
+}
+
+/* Верхняя секция - изображение */
+.top-section {
+    width: 100%;
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    padding: 20px;
+    border: 2px solid #2A7179;
+}
+
+/* Контейнер изображения */
+.image-container {
+    width: 100%;
+    height: 500px;
+    background: white;
+    border-radius: 10px;
+    padding: 10px;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-sizing: border-box;
+}
+
+.no-image {
+    color: #666;
+    font-size: 16px;
+    text-align: center;
+    padding: 40px;
+}
+
+.image-container img {
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    display: block;
+    object-fit: contain;
+    border-radius: 6px;
+}
+
+/* Кнопка увеличения - С ПРОЗРАЧНОСТЬЮ (ОДИН СТИЛЬ) */
+.zoom-btn {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: rgba(42, 113, 121, 0.7); /* 70% непрозрачности */
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 45px;
+    height: 45px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    padding: 0;
+}
+
+/* Используем псевдоэлемент для иконки лупы */
+.zoom-btn::before {
+    content: '';
+    display: block;
+    width: 24px;
+    height: 24px;
+    background: url('../images/full-screen.png') center/contain no-repeat;
+    background-size: contain;
+    filter: brightness(0) invert(1);
+    transition: transform 0.3s ease;
+}
+
+.zoom-btn:hover {
+    background: rgba(29, 90, 97, 0.9); /* Немного темнее и менее прозрачный при наведении */
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+.zoom-btn:hover::before {
+    transform: scale(1.1);
+}
+
+/* Нижняя секция - редактирование */
+.bottom-section {
+    width: 100%;
+}
+
+/* Секция редактирования */
+.edit-section {
+    width: 100%;
+    background: white;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column;
+    border: 2px solid #2A7179;
+}
+
+.edit-section h2 {
+    background: #2A7179;
+    color: white;
+    padding: 15px 20px;
+    font-size: 20px;
+    font-weight: 600;
+    margin: 0;
+}
+
+/* Контейнер с элементами */
+.elements-container {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    max-height: 500px;
+    min-height: 300px;
+}
+
+/* Группа элементов по типу */
+.category-group {
+    margin-bottom: 30px;
+    background: white;
+    border: 2px solid #2A7179;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.category-group:last-child {
+    margin-bottom: 0;
+}
+
+.category-header {
+    background: #e8f4f5;
+    color: #2A7179;
+    padding: 15px 20px;
+    font-size: 18px;
+    font-weight: 600;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #ddd;
+}
+
+.category-count {
+    background: #2A7179;
+    color: white;
+    padding: 4px 12px;
+    border-radius: 15px;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.element-number {
+    background: #2A7179;
+    color: white;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex !important; 
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 500;
+    flex-shrink: 0;
+}
+
+.element-title {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #2A7179;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Карточка элемента */
+.element-card {
+    background: white;
+    margin: 0;
+    padding: 20px;
+    position: relative;
+    transition: background-color 0.2s;
+    border-bottom: 1px solid #eee;
+}
+
+.element-card:hover {
+    background-color: #f8f8f8;
+}
+
+.element-card:last-child {
+    border-bottom: none;
+}
+
+.element-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.element-title {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #2A7179;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.element-number {
+    background: #2A7179;
+    color: white;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.btn-delete {
+    background: #2A7179;
+    color: white;
+    border: none;
+    padding: 3px 11px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 600;
+    font-family: 'Manrope', sans-serif;
+    transition: background 0.3s;
+}
+
+.btn-delete:hover {
+    background: #1d5a61;
+}
+
+/* Формы для разных типов элементов */
+.element-form {
+    display: grid;
+    gap: 15px;
+}
+
+/* Форма для автоматических выключателей (QF) - сетка как в results */
+.form-group.small-input {
+    max-width: 100px; /* Уменьшено в 2 раза */
+}
+
+.form-group.medium-input {
+    max-width: 250px; /* Стандартный размер */
+}
+
+.form-group.large-input {
+    max-width: 350px; /* Увеличенный размер */
+}
+
+/* Убедимся, что все поля в QF форме имеют правильные размеры */
+/* Обновим сетку для QF формы - ВСЕ ЭЛЕМЕНТЫ В ОДНОЙ СТРОКЕ */
+.qf-form {
+    display: grid;
+    gap: 25px; /* расстояние между элементами */
+    grid-template-columns: 100px 120px 110px 180px 200px 100px;
+    align-items: center;
+    justify-items: center;
+    justify-content: center;
+    align-items: end; 
+    justify-items: stretch;
+    border-radius: 12px;
+}
+
+/* Название - чуть больше */
+.qf-form .small-input:first-child { /* Ток */
+    grid-column: 5;
+    min-width: 80px;
+    max-width: 100px;
+}
+
+.qf-form .small-input:nth-child(2) { /* Напряжение */
+    grid-column: 3;
+    min-width: 80px;
+    max-width: 100px;
+}
+
+.qf-form .small-input:nth-child(3) { /* Замыкающий ток */
+    grid-column: 3;
+    min-width: 80px;
+    max-width: 100px;
+}
+
+/* Замыкающий ток - маленький */
+.qf-form .form-input:nth-child(4) { /* Название */
+    grid-column: 4;
+    min-width: 150px;
+    max-width: 200px;
+}
+
+/* Тип монтажа - большой */
+.qf-form .form-input:nth-child(5) { /* Тип монтажа */
+    grid-column: 6;
+    min-width: 180px;
+    max-width: 220px;
+}
+
+/* Количество полюсов - маленький (input number) */
+.qf-form .number-input:nth-child(6) { /* Количество полюсов */
+    grid-column: 7;
+    min-width: 80px;
+    max-width: 100px;
+}
+
+.qf-form .small-input:first-child,
+.qf-form .small-input:nth-child(2),
+.qf-form .small-input:nth-child(3),
+.qf-form .form-input:nth-child(4),
+.qf-form .large-input:nth-child(5),
+.qf-form .number-input:nth-child(6) {
+    grid-column: unset;
+    min-width: unset;
+    max-width: unset;
+}
+
+/* Кнопка удаления */
+.qf-form .btn-delete {
+    grid-column: 8;
+    align-self: center;
+    justify-self: end;
+    width: 40px;
+}
+
+/* Специальные стили для поля number (количество полюсов) */
+.number-input input[type="number"] {
+    width: 100%;
+    text-align: center;
+    padding: 10px 5px;
+    font-family: 'Manrope', sans-serif;
+    font-size: 14px;
+}
+
+/* Стилизация стрелок для поля number */
+.number-input input[type="number"]::-webkit-inner-spin-button,
+.number-input input[type="number"]::-webkit-outer-spin-button {
+    opacity: 1;
+    height: 30px;
+    width: 20px;
+    cursor: pointer;
+    margin: 0;
+}
+
+
+.number-input input[type="number"]::-webkit-outer-spin-button,
+.number-input input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: inner-spin-button !important;
+}
+
+/* Стили для остальных полей */
+.form-group input,
+.form-group select {
+    width: 100%;
+    max-width: 180px; /* Ограничение максимальной ширины */
+    padding: 10px;
+    text-align: center;
+    transition: border-color 0.3s;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-family: 'Manrope', sans-serif;
+    font-size: 14px;
+    background-color: #f9f9f9;
+    box-sizing: border-box;
+}
+
+/* Убираем синий контур при фокусе для числа */
+.number-input input[type="number"]:focus {
+    outline: none;
+    border-color: #2A7179;
+    box-shadow: 0 0 0 2px rgba(42, 113, 121, 0.1);
+}
+
+/* Форма для трансформаторов и счетчиков */
+.simple-form {
+    display: grid;
+    grid-template-columns: 0.1fr 2fr 0.5fr;
+    gap: 15px;
+    align-items: end;
+    max-width: 100%;
+}
+
+.simple-form .form-group {
+    display: flex;
+    flex-direction: column;
+    grid-column: 2;
+}
+
+.simple-form .btn-delete {
+    grid-column: 3;
+    align-self: end;
+}
+
+.qf-form .form-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    width: 100%;
+    max-width: 200px;
+    min-width: 120px;
+    justify-content: flex-end; /* Прижимаем содержимое к низу */
+    min-height: 130px; /* Увеличиваем минимальную высоту */
+}
+
+.qf-form .form-group select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%232A7179' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 12px;
+    padding-right: 35px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.qf-form .form-group label {
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #555;
+    font-size: 14px;
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-family: 'Manrope', sans-serif;
+    font-size: 14px;
+    background-color: #f9f9f9;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: #2A7179;
+    box-shadow: 0 0 0 2px rgba(42, 113, 121, 0.1);
+}
+
+.form-group input::placeholder {
+    color: #999;
+}
+
+/* Панель действий */
+.actions {
+    width: 100%;
+    max-width: 1200px;
+    display: flex;
+    justify-content: space-between;
+    margin: 20px auto;
+    padding: 0px 1px;
+    margin-top: auto;
+}
+
+.add-btn {
+    background: #2A7179;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    font-family: 'Manrope', sans-serif;
+    transition: background 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.add-btn:hover {
+    background: #1d5a61;
+}
+
+.main-actions {
+    display: flex;
+    gap: 15px;
+}
+
+.btn-outline {
+    background: white;
+    color: #2A7179;
+    border: 2px solid #2A7179;
+    padding: 11px 65px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 600;
+    font-family: 'Manrope', sans-serif;
+    transition: all 0.3s;
+}
+
+.btn-outline:hover {
+    background: rgb(178, 213, 216);
+}
+
+.btn-primary {
+    background: #2A7179;
+    color: white;
+    border: none;
+    padding: 11px 45px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 600;
+    font-family: 'Manrope', sans-serif;
+    transition: background 0.3s;
+}
+
+.btn-primary:hover {
+    background: #1d5a61;
+}
+
+/* Footer */
+.site-footer {
+    color: black;
+    text-align: center;
+    padding: 15px 0;
+    width: 100%;
+    margin-top: auto;
+    border-top: 1px solid #ddd;
+    font-size: 14px;
+}
+
+/* Пустое состояние */
+.empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: #666;
+}
+
+.empty-state p {
+    margin-bottom: 20px;
+    font-size: 16px;
+}
+
+/* Модальное окно увеличения изображения */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.9);
+    z-index: 1000;
+    overflow: auto;
+    touch-action: none;
+}
+
+.modal-content {
+    position: relative;
+    margin: 20px auto;
+    max-width: 90vw;
+    max-height: 90vh;
+    overflow: hidden;
+    background: #111;
+    padding: 20px;
+    box-sizing: border-box;
+    border: 2px solid #2A7179;
+    border-radius: 12px;
+}
+
+.image-wrapper {
+    position: relative;
+    width: 100%;
+    height: 100%; 
+    max-width: none;
+    max-height: none;
+    overflow: auto; 
+    border-radius: 12px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#modal-image {
+    display: block;
+    transform-origin: 0 0;
+    max-width: none;
+    max-height: none;
+    margin: 0 auto;
+    cursor: grab;
+    will-change: transform;
+}
+
+.close-modal {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    color: white;
+    font-size: 30px;
+    cursor: pointer;
+    z-index: 1010;
+    background: rgba(0, 0, 0, 0.5);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#modal-image:active {
+    cursor: grabbing;
+    transition: none;
+}
+
+/* Панель управления зумом в модальном окне */
+.zoom-controls {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 10px;
+    z-index: 1010;
+    background: rgba(0, 0, 0, 0.7);
+    padding: 10px 15px;
+    border-radius: 25px;
+    backdrop-filter: blur(5px);
+    border: 2px solid #2A7179;
+}
+
+.zoom-controls button {
+    background: #2A7179;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.zoom-controls button:hover {
+    background: #1d5a61;
+    transform: scale(1.1);
+}
+
+/* Стили для кастомного alert на странице редактирования */
+.custom-alert {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    border: 2px solid #2A7179;
+    border-radius: 20px;
+    padding: 30px;
+    z-index: 2000;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    min-width: 300px;
+    max-width: 500px;
+    text-align: center;
+    font-family: 'Manrope', sans-serif;
+}
+
+.custom-alert-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 1999;
+}
+
+.custom-alert-title {
+    color: #2A7179;
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 15px;
+    font-family: 'Manrope', sans-serif;
+}
+
+.custom-alert-message {
+    color: #333;
+    font-size: 16px;
+    margin-bottom: 25px;
+    line-height: 1.5;
+    font-family: 'Manrope', sans-serif;
+}
+
+.custom-alert-button {
+    background: #2A7179;
+    color: white;
+    border: none;
+    padding: 12px 35px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 600;
+    font-family: 'Manrope', sans-serif;
+    transition: background 0.3s;
+}
+
+.custom-alert-button:hover {
+    background: #1d5a61;
+}
+
+/* Стили для кастомного confirm диалога */
+.custom-alert-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.custom-alert-button.confirm {
+    background-color: #2A7179;
+    color: white;
+    border: none;
+    padding: 12px 30px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    font-family: 'Manrope', sans-serif;
+    min-width: 80px;
+}
+
+.custom-alert-button.confirm:hover {
+    background-color: #1d5a61;
+}
+
+.custom-alert-button.cancel {
+    background-color: #FF6C0C;
+    color: white;
+    border: none;
+    padding: 12px 30px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    font-family: 'Manrope', sans-serif;
+    min-width: 80px;
+}
+
+.custom-alert-button.cancel:hover {
+    background-color: #ff6d0cc4;
+}
+
+/* Toast уведомления */
+.toast-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 2000;
+}
+
+.toast {
+    background: white;
+    border: 2px solid #2A7179;
+    border-radius: 12px;
+    padding: 15px 20px;
+    margin-bottom: 10px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    min-width: 300px;
+    animation: slideIn 0.3s ease;
+    font-family: 'Manrope', sans-serif;
+}
+
+.toast-success {
+    border-color: #4CAF50;
+}
+
+.toast-error {
+    border-color: #f44336;
+}
+
+.toast-warning {
+    border-color: #ff9800;
+}
+
+.toast-info {
+    border-color: #2196F3;
+}
+
+.toast-icon {
+    font-size: 24px;
+    flex-shrink: 0;
+}
+
+.toast-content {
+    flex: 1;
+}
+
+.toast-title {
+    font-weight: 600;
+    color: #2A7179;
+    margin-bottom: 5px;
+}
+
+.toast-message {
+    color: #333;
+    font-size: 14px;
+}
+
+.toast-close {
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    color: #999;
+    padding: 0;
+    width: 24px;
+    height: 24px;
+}
+
+.toast-close:hover {
+    color: #333;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOut {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+}
+
+/* Адаптивность */
+@media (max-width: 1200px) {
+    body {
+        padding: 15px;
+    }
+    
+    .container {
+        max-width: 95%;
+    }
+    
+    .image-container {
+        height: 400px;
+    }
+    
+    .qf-form {
+        grid-template-columns: 0.1fr 1fr 1fr 1fr 1fr 0.5fr;
+        gap: 10px;
+    }
+}
+
+@media (max-width: 992px) {
+    .image-container {
+        height: 350px;
+    }
+    
+    .qf-form {
+        grid-template-columns: 0.1fr 1fr 1fr;
+        gap: 10px;
+    }
+    
+    .qf-form .form-group:nth-child(1),
+    .qf-form .form-group:nth-child(2) {
+        grid-column: 2;
+        grid-row: 1;
+    }
+    
+    .qf-form .form-group:nth-child(3),
+    .qf-form .form-group:nth-child(4) {
+        grid-column: 3;
+        grid-row: 1;
+    }
+    
+    .qf-form .form-group:nth-child(5) {
+        grid-column: 2;
+        grid-row: 2;
+    }
+    
+    .qf-form .form-group:nth-child(6) {
+        grid-column: 3;
+        grid-row: 2;
+    }
+    
+    .actions {
+        flex-direction: column;
+        gap: 15px;
+        align-items: stretch;
+    }
+    
+    .add-btn {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .main-actions {
+        width: 100%;
+        justify-content: space-between;
+    }
+    
+    .btn-outline,
+    .btn-primary {
+        flex: 1;
+        text-align: center;
+    }
+}
+
+@media (max-width: 768px) {
+    body {
+        padding: 10px;
+        background-attachment: scroll;
+    }
+    
+    h1 {
+        font-size: 24px;
+    }
+    
+    .image-container {
+        height: 300px;
+        padding: 8px;
+    }
+    
+    .zoom-btn {
+        width: 40px;
+        height: 40px;
+        top: 15px;
+        right: 15px;
+    }
+    
+    .zoom-btn::before {
+        width: 20px;
+        height: 20px;
+    }
+    
+    .qf-form {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+    
+    .qf-form .form-group:nth-child(n) {
+        grid-column: 1;
+        grid-row: auto;
+    }
+    
+    .simple-form {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+    
+    .simple-form .form-group,
+    .simple-form .btn-delete {
+        grid-column: 1;
+        grid-row: auto;
+    }
+    
+    .element-card {
+        padding: 15px;
+    }
+    
+    .btn-outline,
+    .btn-primary {
+        padding: 10px 20px;
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 480px) {
+    body {
+        padding: 5px;
+    }
+    
+    h1 {
+        font-size: 22px;
+        margin-bottom: 20px;
+    }
+    
+    .image-container {
+        height: 250px;
+    }
+    
+    .zoom-btn {
+        width: 35px;
+        height: 35px;
+        top: 10px;
+        right: 10px;
+    }
+    
+    .zoom-btn::before {
+        width: 18px;
+        height: 18px;
+    }
+    
+    .category-header {
+        padding: 12px 15px;
+        font-size: 16px;
+        flex-direction: column;
+        gap: 8px;
+        align-items: flex-start;
+    }
+    
+    .element-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+    
+    .btn-delete {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .actions {
+        gap: 10px;
+    }
+    
+    .main-actions {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .btn-outline,
+    .btn-primary {
+        width: 100%;
+        text-align: center;
+    }
+}

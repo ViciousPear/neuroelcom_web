@@ -14,11 +14,42 @@
 </head>
 <body>
     <header>
-        <!-- Общий header для всех страниц -->
-        <div class="logo">
-            <img src="{% static '/images/logo_for_contacts.png' %}" alt="Логотип ЭЛКОМ">
+        <div class="header-container">
+            <!-- Общий header для всех страниц -->
+            <div class="logo">
+                <img src="{% static 'images/logo_for_contacts.png' %}" alt="Логотип ЭЛКОМ">
+            </div>
+            
+            <!-- Кнопка контекстного меню (увеличенная) -->
+            <div class="menu-container">
+                <button class="menu-button" id="menuButton" aria-label="Меню">
+                    <img src="{% if user.is_authenticated %}{% static 'images/menudown_icon.png' %}{% else %}{% static 'images/for_signup.png' %}{% endif %}" 
+                         alt="Меню" 
+                         id="menuIcon"
+                         class="menu-icon">
+                </button>
+                
+                <!-- Выпадающее меню -->
+                <div class="dropdown-menu" id="dropdownMenu">
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'profile' %}" class="menu-item">Перейти к профилю</a>
+                        <a href="{% url 'dashboard' %}" class="menu-item">Открыть историю</a>
+                        <div class="menu-divider"></div>
+                        <form method="post" action="{% url 'logout' %}" class="menu-item-form" id="logoutForm">
+                            {% csrf_token %}
+                            <button type="submit" class="menu-item logout-btn">Выход</button>
+                        </form>
+                    {% else %}
+                        <a href="{% url 'login' %}" class="menu-item">Вход</a>
+                        <a href="{% url 'register' %}" class="menu-item">Регистрация</a>
+                    {% endif %}
+                </div>
+            </div>
         </div>
     </header>
+
+    <!-- Контейнер для тостов -->
+    <div class="toast-container"></div>
 
     <main class="main-content">
         <!-- Основное содержимое страницы -->
@@ -28,11 +59,47 @@
 
     <footer class="site-footer">
         <!-- Общий footer -->
-        <p>&copy; 1998–2025 ООО «Элком». Все права защищены.</p>
+        <p>&copy; 1998–2026 ООО «Элком». Все права защищены.</p>
     </footer>
+
+    <!-- Подключение JavaScript с типом module -->
+   <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Инициализация меню
+        if (typeof window.initMenu === 'function') {
+            window.initMenu({
+                menuDownIcon: "{% static 'images/menudown_icon.png' %}",
+                menuUpIcon: "{% static 'images/menuup_icon.png' %}",
+                signupIcon: "{% static 'images/for_signup.png' %}",
+                isAuthenticated: {{ user.is_authenticated|yesno:"true,false" }}
+            });
+        }
+        
+        // Инициализация формы выхода
+        if (typeof window.initLogoutForm === 'function') {
+            window.initLogoutForm();
+        }
+        
+        // Показываем сообщения как тосты
+        {% if messages %}
+            {% for message in messages %}
+                if (typeof window.showToast === 'function') {
+                    window.showToast(
+                        "{{ message.message|escapejs }}",
+                        "{{ message.tags }}",
+                        "{{ message.tags|capfirst }}",
+                        4000
+                    );
+                }
+            {% endfor %}
+        {% endif %}
+    });
+    </script>
 
     <!-- Подключение JavaScript -->
     {% block scripts %}
+    <script src="{% static 'js/alerts_for_history.js' %}"></script>
+    <script src="{% static 'js/menu.js' %}"></script>
     <script src="{% static 'js/bootstrap.js' %}"></script>
     {% endblock %}
 </body>

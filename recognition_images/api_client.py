@@ -48,3 +48,29 @@ class APIClient:
             raise Exception(f"Ошибка соединения с сервером {self.base_url}: {str(e)}")
         except Exception as e:
             raise Exception(f"Ошибка обработки ответа сервера: {str(e)}")
+        
+    def detect_only(self, image_path):
+        """Отправка изображения на удаленный сервер для обработки"""
+        try:
+            api_url = f"{self.base_url}/detect_only"
+            
+            with open(image_path, 'rb') as f:
+                response = self.session.post(
+                    api_url,
+                    files={'file': f},
+                    timeout=(30, self.timeout)
+                )
+            
+            response.raise_for_status()
+            data = response.json()
+            
+            # Возвращаем полный ответ API как словарь
+            return {
+                'image_base64': data["image_base64"],
+                'detection_results': data["detected_elements"]
+            }
+                
+        except requests.exceptions.RequestException as e:
+            raise Exception(f"Ошибка соединения с сервером {self.base_url}: {str(e)}")
+        except Exception as e:
+            raise Exception(f"Ошибка обработки ответа сервера: {str(e)}")

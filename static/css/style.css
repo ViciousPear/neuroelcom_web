@@ -139,6 +139,522 @@ body {
     box-sizing: border-box;
 }
 
+#pdfModal {
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(3px);
+}
+
+/* Контейнер для PDF просмотра */
+#pdfPreview {
+    position: relative;
+    overflow: auto;
+    background: #f5f5f5;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* Стили для режима выделения */
+#pdfPreview.selection-mode {
+    cursor: crosshair;
+}
+
+#pdfPreview.selection-mode canvas {
+    cursor: crosshair;
+}
+
+/* Анимация для создания выделения */
+.selection-rect.creating {
+    animation: pulse-border 1.5s infinite;
+}
+
+@keyframes pulse-border {
+    0% {
+        box-shadow: 
+            0 0 0 9999px rgba(0, 0, 0, 0.4),
+            inset 0 0 0 1px rgba(59, 130, 246, 1),
+            inset 0 0 15px rgba(59, 130, 246, 0.3);
+    }
+    50% {
+        box-shadow: 
+            0 0 0 9999px rgba(0, 0, 0, 0.4),
+            inset 0 0 0 2px rgba(59, 130, 246, 1),
+            inset 0 0 20px rgba(59, 130, 246, 0.5);
+    }
+    100% {
+        box-shadow: 
+            0 0 0 9999px rgba(0, 0, 0, 0.4),
+            inset 0 0 0 1px rgba(59, 130, 246, 1),
+            inset 0 0 15px rgba(59, 130, 246, 0.3);
+    }
+}
+
+/* Ручки выделения */
+.selection-handles .handle {
+    position: absolute !important;
+    width: 16px !important;
+    height: 16px !important;
+    background: white !important;
+    border: 2px solid #2A7179 !important;
+    border-radius: 50% !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3) !important;
+    pointer-events: auto !important;
+    z-index: 1004 !important;
+    transition: transform 0.1s, background-color 0.1s !important;
+}
+
+
+.selection-handles .handle:hover {
+    transform: scale(1.3) !important;
+    background-color: #2A7179 !important;
+    border-color: white !important;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4) !important;
+}
+
+.selection-handles .handle-n,
+.selection-handles .handle-s {
+    background-color: #FF6C0C !important;
+    border-color: #FF6C0C !important;
+}
+
+.selection-handles .handle-w,
+.selection-handles .handle-e {
+    background-color: #3a98a2 !important;
+    border-color: #3a98a2 !important;
+}
+
+/* Overlay должен быть видимым */
+.pdf-viewer {
+    position: relative !important;
+    min-height: 500px;
+    overflow: auto;
+    background: #f5f5f5;
+    border-radius: 8px;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    padding: 20px !important;
+    box-sizing: border-box !important;
+}
+
+
+/* Когда создаем выделение - анимация */
+.selection-rect.creating {
+    border-style: dashed !important;
+    animation: pulseBorder 1s infinite !important;
+}
+
+@keyframes pulseCreation {
+    0% {
+        box-shadow: 
+            inset 0 0 0 1px rgba(255, 255, 255, 0.8),
+            0 0 0 1px rgba(42, 113, 121, 0.3),
+            0 0 20px rgba(42, 113, 121, 0.2);
+    }
+    50% {
+        box-shadow: 
+            inset 0 0 0 1px rgba(255, 255, 255, 0.8),
+            0 0 0 2px rgba(255, 108, 12, 0.5),
+            0 0 30px rgba(255, 108, 12, 0.3);
+    }
+    100% {
+        box-shadow: 
+            inset 0 0 0 1px rgba(255, 255, 255, 0.8),
+            0 0 0 1px rgba(42, 113, 121, 0.3),
+            0 0 20px rgba(42, 113, 121, 0.2);
+    }
+}
+
+
+/* Тень/затемнение вокруг выделения */
+.selection-rect::before {
+    content: '' !important;
+    position: fixed !important;
+    top: -10000px !important;
+    left: -10000px !important;
+    right: -10000px !important;
+    bottom: -10000px !important;
+    background: rgba(0, 0, 0, 0.3) !important;
+    pointer-events: none !important;
+    z-index: -1 !important;
+}
+
+/* Когда прямоугольник активен (показывается) */
+.selection-rect:not([style*="display: none"]) {
+    display: block !important;
+}
+
+/* Стили для контейнера canvas */
+.canvas-container {
+    position: relative !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    width: 100% !important;
+    height: 100% !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
+    overflow: hidden !important;
+}
+
+.canvas-container canvas {
+    display: block !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
+    width: auto !important;
+    height: auto !important;
+    object-fit: contain !important;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1) !important;
+    border-radius: 4px !important;
+}
+
+/* Режим выделения активен */
+.canvas-container.selection-mode-active {
+    outline: 2px solid rgba(42, 113, 121, 0.5) !important;
+    outline-offset: 2px !important;
+}
+
+/* Overlay выделения */
+.selection-overlay {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    z-index: 10 !important;
+    pointer-events: auto !important;
+}
+
+.selection-overlay.active {
+    background-color: rgba(0, 0, 0, 0.3) !important;
+    cursor: crosshair !important;
+}
+
+/* Основной прямоугольник выделения */
+.selection-rect {
+    position: absolute !important;
+    border: 2px solid #2A7179 !important;
+    background-color: rgba(255, 255, 255, 0.8) !important;
+    pointer-events: auto !important;
+    cursor: move !important;
+    z-index: 11 !important;
+    box-sizing: border-box !important;
+    box-shadow: 
+        0 0 0 10000px rgba(0, 0, 0, 0.3),
+        inset 0 0 0 1px #2A7179 !important;
+    transition: border-color 0.3s !important;
+}
+
+.selection-handles {
+    pointer-events: all !important;
+}
+
+.selection-rect.creating {
+    border-style: dashed !important;
+    animation: pulseBorder 1s infinite !important;
+}
+
+/* Ручки выделения */
+.selection-handles .handle {
+    position: absolute !important;
+    width: 12px !important;
+    height: 12px !important;
+    background: white !important;
+    border: 2px solid #2A7179 !important;
+    border-radius: 50% !important;
+    pointer-events: auto !important;
+    z-index: 12 !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.selection-handles .handle:hover {
+    transform: scale(1.3) !important;
+    background-color: #2A7179 !important;
+    border-color: white !important;
+}
+
+/* Метка размеров */
+.selection-dimensions {
+    background: linear-gradient(135deg, #2A7179, #1a5a63) !important;
+    color: white !important;
+    padding: 6px 12px !important;
+    border-radius: 6px !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    animation: slideIn 0.3s ease-out !important;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+}
+
+.selection-dimensions.top {
+    bottom: auto !important;
+    top: -30px !important;
+}
+
+/* Анимация пульсации при создании */
+@keyframes pulseBorder {
+    0% {
+        border-color: #2A7179;
+        box-shadow: 
+            inset 0 0 20px rgba(42, 113, 121, 0.2),
+            0 0 0 10000px rgba(0, 0, 0, 0.3) !important;
+    }
+    50% {
+        border-color: #FF6C0C; /* Оранжевый цвет для контраста */
+        box-shadow: 
+            inset 0 0 20px rgba(255, 108, 12, 0.3),
+            0 0 0 10000px rgba(0, 0, 0, 0.4) !important;
+    }
+    100% {
+        border-color: #2A7179;
+        box-shadow: 
+            inset 0 0 20px rgba(42, 113, 121, 0.2),
+            0 0 0 10000px rgba(0, 0, 0, 0.3) !important;
+    }
+}
+
+
+
+
+.handle {
+    position: absolute !important;
+    width: 16px !important;
+    height: 16px !important;
+    background: white !important;
+    border: 2px solid #2A7179 !important;
+    border-radius: 50% !important;
+    pointer-events: auto !important;
+    cursor: pointer !important;
+    z-index: 104 !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3) !important;
+    transition: all 0.2s ease !important;
+}
+
+/* Позиции ручек */
+.handle-nw {
+    top: -8px !important;
+    left: -8px !important;
+    cursor: nw-resize !important;
+}
+
+.handle-ne {
+    top: -8px !important;
+    right: -8px !important;
+    cursor: ne-resize !important;
+}
+
+.handle-sw {
+    bottom: -8px !important;
+    left: -8px !important;
+    cursor: sw-resize !important;
+}
+
+.handle-se {
+    bottom: -8px !important;
+    right: -8px !important;
+    cursor: se-resize !important;
+}
+
+
+/* ИНТЕРАКТИВНЫЕ ПОДСКАЗКИ И СОСТОЯНИЯ */
+
+/* Подсказка при первом использовании */
+.selection-guide {
+    position: fixed !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    background: rgba(255, 255, 255, 0.95) !important;
+    border: 2px solid #2A7179 !important;
+    border-radius: 12px !important;
+    padding: 25px !important;
+    max-width: 400px !important;
+    width: 90% !important;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3) !important;
+    z-index: 9999 !important;
+    animation: fadeInScale 0.4s ease-out !important;
+}
+
+@keyframes fadeInScale {
+    from {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+    }
+}
+
+.selection-guide h4 {
+    color: #2A7179 !important;
+    margin-top: 0 !important;
+    margin-bottom: 15px !important;
+    font-size: 18px !important;
+    text-align: center !important;
+}
+
+.selection-guide ul {
+    margin: 0 !important;
+    padding-left: 20px !important;
+    margin-bottom: 20px !important;
+}
+
+.selection-guide li {
+    margin-bottom: 8px !important;
+    color: #333 !important;
+    font-size: 14px !important;
+    line-height: 1.4 !important;
+}
+
+.selection-guide-close {
+    display: block !important;
+    width: 100% !important;
+    padding: 10px !important;
+    background: #2A7179 !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 6px !important;
+    cursor: pointer !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    transition: background-color 0.3s !important;
+}
+
+.selection-guide-close:hover {
+    background: #235d66 !important;
+}
+
+/* Стили для индикатора режима выделения */
+.pdf-viewer.selection-mode {
+    cursor: crosshair !important;
+    outline: 2px solid rgba(42, 113, 121, 0.5) !important;
+    outline-offset: -2px !important;
+}
+
+/* Улучшенные стили для кнопок выделения */
+.tool-btn.active {
+    background: #2A7179 !important;
+    color: white !important;
+    border-color: #2A7179 !important;
+    box-shadow: 0 2px 8px rgba(42, 113, 121, 0.3) !important;
+}
+
+#toggleSelection.active {
+    background: #2A7179 !important;
+    color: white !important;
+    border-color: #2A7179 !important;
+}
+
+/* === ОТЛАДОЧНЫЕ СТИЛИ (удалить после отладки) === */
+.selection-debug {
+    position: fixed !important;
+    bottom: 10px !important;
+    left: 10px !important;
+    background: rgba(0, 0, 0, 0.85) !important;
+    color: #FF6C0C !important;
+    padding: 10px !important;
+    border-radius: 6px !important;
+    font-family: monospace !important;
+    font-size: 12px !important;
+    z-index: 9999 !important;
+    max-width: 300px !important;
+    border: 1px solid #FF6C0C !important;
+}
+
+@keyframes buttonPulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(42, 113, 121, 0.4);
+    }
+    70% {
+        box-shadow: 0 0 0 6px rgba(42, 113, 121, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(42, 113, 121, 0);
+    }
+}
+
+/* Стиль для кнопки отправки выделенного */
+#convertSelection {
+    background: linear-gradient(135deg, #FF6C0C, #E55B00) !important;
+    color: white !important;
+    border: none !important;
+    position: relative !important;
+    overflow: hidden !important;
+    font-weight: 600 !important;
+    transition: all 0.3s ease !important;
+    box-shadow: 0 4px 12px rgba(255, 108, 12, 0.3) !important;
+}
+
+#convertSelection:hover {
+    background: linear-gradient(135deg, #E55B00, #CC4A00) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 16px rgba(255, 108, 12, 0.4) !important;
+}
+
+#convertSelection:active {
+    transform: translateY(0) !important;
+    box-shadow: 0 2px 8px rgba(255, 108, 12, 0.3) !important;
+}
+
+/* Анимация "сияния" для кнопки */
+#convertSelection:before {
+    content: '' !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: -100% !important;
+    width: 100% !important;
+    height: 100% !important;
+    background: linear-gradient(90deg, 
+        transparent, 
+        rgba(255, 255, 255, 0.4), 
+        transparent) !important;
+    transition: left 0.7s ease-in-out !important;
+}
+
+#convertSelection:hover:before {
+    left: 100% !important;
+}
+
+/* ОТЛАДОЧНЫЕ СТИЛИ (можно удалить после отладки) */
+.selection-debug {
+    position: absolute !important;
+    top: 10px !important;
+    left: 10px !important;
+    background: rgba(0, 0, 0, 0.8) !important;
+    color: white !important;
+    padding: 8px 12px !important;
+    border-radius: 4px !important;
+    font-size: 11px !important;
+    font-family: monospace !important;
+    z-index: 9999 !important;
+    pointer-events: none !important;
+}
+
+
+.pdf-viewer * {
+    overflow: visible !important;
+}
+
+/* Гарантируем, что canvas не перекрывает выделение */
+.pdf-viewer canvas {
+    position: relative !important;
+    z-index: 1 !important;
+}
+
+#pdfPreview {
+    pointer-events: auto !important;
+}
 
 /* Модальное окно с улучшенным скроллом */
 .modal {
@@ -150,7 +666,7 @@ body {
     width: 100%;
     height: 100%;
     background-color: rgba(0,0,0,0.7);
-    overflow: hidden;
+    overflow: auto;
 }
 
 .modal-scroll-container {
@@ -178,8 +694,9 @@ body {
     display: flex;
     flex-direction: column;
     border: 1px solid #2A7179;
-    overflow: hidden;
+    overflow: visible !important;
     position: relative;
+    pointer-events: auto !important;
 }
 
 /* Закрытие модального окна */
@@ -214,6 +731,8 @@ body {
     padding-bottom: 10px;
     margin-bottom: 20px;
     border-bottom: 1px solid #e0e0e0;
+    position: relative;
+    z-index: 1;
 }
 
 .thumbnails-scroll-container::-webkit-scrollbar {
@@ -799,10 +1318,84 @@ body {
 }
 
 .logo img{
-        width: 250px;  /* или auto, если нужно сохранить пропорции */
+        width: 200px;  /* или auto, если нужно сохранить пропорции */
         height: auto;  /* автоматическая высота */
         /* Можно также использовать max-width */
         max-width: 100%;
+}
+
+
+
+
+@media (max-width: 768px) {
+    .selection-rect {
+        border-width: 2px !important;
+    }
+    
+    .handle {
+        width: 14px !important;
+        height: 14px !important;
+    }
+    
+    .selection-dimensions {
+        font-size: 11px !important;
+        padding: 4px 8px !important;
+        bottom: -30px !important;
+    }
+    
+    .selection-dimensions.top {
+        top: -30px !important;
+    }
+    
+    .selection-guide {
+        max-width: 320px !important;
+        padding: 20px !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .selection-rect {
+        border-width: 1.5px !important;
+    }
+    
+    .handle {
+        width: 12px !important;
+        height: 12px !important;
+    }
+    
+    .selection-dimensions {
+        font-size: 10px !important;
+        padding: 3px 6px !important;
+        bottom: -25px !important;
+    }
+    
+    .selection-dimensions.top {
+        top: -25px !important;
+    }
+    
+    .selection-guide {
+        max-width: 280px !important;
+        padding: 15px !important;
+    }
+    
+    .selection-guide h4 {
+        font-size: 16px !important;
+    }
+    
+    .selection-guide li {
+        font-size: 12px !important;
+    }
+}
+
+/* Стиль для PDF viewer в режиме выделения */
+.pdf-viewer.selection-mode {
+    cursor: crosshair;
+}
+
+/* Стиль для кнопок */
+.tool-btn.active {
+    background-color: #3b82f6;
+    color: white;
 }
 
 .upload-message {
@@ -974,3 +1567,299 @@ body {
     }
 }
 
+/* Стили для хедера */
+.header-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 30px;
+    background: transparent;
+    position: relative;
+    z-index: 100;
+}
+
+.logo img {
+    width: 250px;
+    height: auto;
+    max-width: 100%;
+}
+
+/* Контейнер для меню */
+.menu-container {
+    position: relative;
+}
+
+/* Кнопка меню - УВЕЛИЧЕННАЯ */
+.menu-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 12px; /* Увеличено с 8px */
+    border-radius: 12px; /* Увеличено с 8px */
+    transition: background-color 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.menu-button:hover {
+    background-color: rgba(42, 113, 121, 0.15); /* Немного увеличена прозрачность */
+}
+
+.menu-button:active {
+    transform: scale(0.95);
+}
+
+/* Иконка меню - УВЕЛИЧЕННАЯ */
+.menu-icon {
+    width: 55px; /* Увеличено с 40px */
+    height: 55px; /* Увеличено с 40px */
+    object-fit: contain;
+    transition: transform 0.3s;
+}
+
+.menu-button:hover .menu-icon {
+    transform: scale(1.15); /* Увеличено с 1.1 */
+}
+
+/* Выпадающее меню */
+.dropdown-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 15px; /* Увеличено с 10px */
+    min-width: 220px; /* Увеличено с 200px */
+    background: white;
+    border-radius: 16px; /* Увеличено с 12px */
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2); /* Увеличена тень */
+    border: 1px solid rgba(42, 113, 121, 0.3);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.3s ease;
+    z-index: 1000;
+    overflow: hidden;
+}
+
+.dropdown-menu.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+/* Элементы меню - УВЕЛИЧЕННЫЕ */
+.menu-item {
+    display: block;
+    padding: 14px 24px; /* Увеличено с 12px 20px */
+    color: #333;
+    text-decoration: none;
+    font-family: 'Manrope', sans-serif;
+    font-size: 16px; /* Увеличено с 14px */
+    font-weight: 500;
+    transition: all 0.3s;
+    cursor: pointer;
+    background: white;
+    border: none;
+    width: 100%;
+    text-align: left;
+}
+
+.menu-item:hover {
+    background-color: rgba(42, 113, 121, 0.1);
+    color: #2A7179;
+}
+
+.menu-item:active {
+    background-color: rgba(42, 113, 121, 0.2);
+}
+
+/* Форма для выхода (чтобы использовать POST) */
+.menu-item-form {
+    margin: 0;
+    padding: 0;
+}
+
+.logout-btn {
+    width: 100%;
+    text-align: left;
+    font-family: 'Manrope', sans-serif;
+    font-size: 16px; /* Увеличено с 14px */
+    font-weight: 500;
+    color: #dc3545;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 14px 24px; /* Увеличено */
+}
+
+.logout-btn:hover {
+    background-color: rgba(220, 53, 69, 0.1);
+    color: #dc3545;
+}
+
+/* Разделитель в меню */
+.menu-divider {
+    height: 1px;
+    background: linear-gradient(to right, transparent, rgba(42, 113, 121, 0.3), transparent);
+    margin: 8px 0; /* Увеличено с 5px */
+}
+
+/* Toast уведомления - если их нет в style.css, добавьте */
+.toast-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    pointer-events: none;
+}
+
+.toast {
+    background: white;
+    border-left: 4px solid;
+    border-radius: 8px;
+    padding: 16px 20px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 300px;
+    max-width: 400px;
+    animation: slideIn 0.3s ease;
+    pointer-events: auto;
+    position: relative;
+}
+
+.toast-success {
+    border-left-color: #4CAF50;
+}
+
+.toast-error {
+    border-left-color: #f44336;
+}
+
+.toast-warning {
+    border-left-color: #ff9800;
+}
+
+.toast-info {
+    border-left-color: #2196F3;
+}
+
+.toast-icon {
+    font-size: 24px;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.toast-content {
+    flex: 1;
+}
+
+.toast-title {
+    font-weight: 600;
+    margin-bottom: 4px;
+    font-size: 14px;
+}
+
+.toast-message {
+    color: #666;
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+.toast-close {
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    color: #999;
+    padding: 0;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.3s;
+}
+
+.toast-close:hover {
+    color: #333;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOut {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+}
+
+/* Адаптивность для увеличенных элементов */
+@media (max-width: 768px) {
+    .header-container {
+        padding: 10px 20px;
+    }
+    
+    .logo img {
+        width: 180px;
+    }
+    
+    .menu-icon {
+        width: 42px; /* Увеличено с 35px */
+        height: 42px;
+    }
+    
+    .dropdown-menu {
+        min-width: 200px;
+    }
+    
+    .menu-item, .logout-btn {
+        padding: 12px 20px;
+        font-size: 15px;
+    }
+}
+
+@media (max-width: 480px) {
+    .header-container {
+        padding: 8px 15px;
+    }
+    
+    .logo img {
+        width: 140px;
+    }
+    
+    .menu-icon {
+        width: 38px; /* Увеличено с 30px */
+        height: 38px;
+    }
+    
+    .dropdown-menu {
+        min-width: 180px;
+        right: -10px;
+    }
+    
+    .menu-item, .logout-btn {
+        padding: 10px 16px;
+        font-size: 14px;
+    }
+}

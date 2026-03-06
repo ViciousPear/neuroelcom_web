@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 from pathlib import Path
 import os
 from dotenv import load_dotenv
+import psycopg2
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -40,6 +41,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'recognition_images',
+    'accounts',
 ]
 
 MIDDLEWARE = [
@@ -50,6 +52,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'accounts.middleware.ClearMessagesMiddleware',
+    'accounts.middleware.DynamicSessionMiddleware',
 ]
 
 ROOT_URLCONF = 'neuroelcom_web.urls'
@@ -59,6 +63,7 @@ TEMPLATES = [
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [
             os.path.join(BASE_DIR, 'recognition_images/templates/recognition'),
+            os.path.join(BASE_DIR, 'accounts/templates/accounts'),
             ],
         'APP_DIRS': True,
         'OPTIONS': {
@@ -71,6 +76,13 @@ TEMPLATES = [
     },
 ]
 
+
+# Настройки аутентификации
+AUTH_USER_MODEL = 'accounts.User'
+LOGIN_URL = 'login'
+LOGIN_REDIRECT_URL = 'dashboard'
+LOGOUT_REDIRECT_URL = 'home'
+
 WSGI_APPLICATION = 'neuroelcom_web.wsgi.application'
 
 
@@ -79,8 +91,15 @@ WSGI_APPLICATION = 'neuroelcom_web.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.getenv('POSTGRES_DB'),
+        'USER': os.getenv('POSTGRES_USER'),
+        'PASSWORD': os.getenv('POSTGRES_PASSWORD'),
+        'HOST': os.getenv('POSTGRES_HOST'),
+        'PORT': os.getenv('POSTGRES_PORT'),
+        'OPTIONS': {
+            'sslmode': os.getenv('POSTGRES_SSLMODE'),
+        }
     }
 }
 
@@ -148,3 +167,11 @@ SESSION_COOKIE_SECURE = IS_PRODUCTION
 CSRF_COOKIE_SECURE = IS_PRODUCTION
 SECURE_SSL_REDIRECT = IS_PRODUCTION
 
+# Время жизни сессии в секундах (по умолчанию 2 недели = 1209600)
+# SESSION_COOKIE_AGE = 172800  # 48 часов
+
+# Закрывать сессию при закрытии браузера
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False  # True - закрывать, False - не закрывать
+
+# Обновлять сессию при каждом запросе (продлевает жизнь)
+SESSION_SAVE_EVERY_REQUEST = True

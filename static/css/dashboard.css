@@ -1,0 +1,611 @@
+/* Сброс стилей */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Manrope', sans-serif;
+    overflow: hidden;
+}
+
+.history-wrapper {
+    width: 100vw;
+    height: 100vh;
+    position: relative;
+    background: url('../images/Computer. Tab1_beta.png') center/cover no-repeat;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+/* Логотип - УВЕЛИЧЕН */
+.logo {
+    position: absolute;
+    top: 20px;
+    left: 30px;
+    width: 220px;
+    height: 76px;
+    z-index: 3;
+}
+
+.logo img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+/* Контейнер для меню */
+.menu-container {
+    position: absolute;
+    top: 20px;
+    right: 30px;
+    z-index: 3;
+}
+
+.menu-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 12px;
+    border-radius: 12px;
+    transition: background-color 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.menu-button:hover {
+    background-color: rgba(42, 113, 121, 0.1);
+}
+
+.menu-button:active {
+    transform: scale(0.95);
+}
+
+.menu-icon {
+    width: 55px;
+    height: 55px;
+    object-fit: contain;
+    transition: transform 0.3s;
+}
+
+.menu-button:hover .menu-icon {
+    transform: scale(1.1);
+}
+
+/* Выпадающее меню */
+.dropdown-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 15px; /* Увеличено с 10px */
+    min-width: 220px; /* Увеличено с 200px */
+    background: white;
+    border-radius: 16px; /* Увеличено с 12px */
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2); /* Увеличена тень */
+    border: 1px solid rgba(42, 113, 121, 0.3);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.3s ease;
+    z-index: 1000;
+    overflow: hidden;
+}
+
+.dropdown-menu.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+/* Элементы меню - УВЕЛИЧЕННЫЕ */
+.menu-item {
+    display: block;
+    padding: 14px 24px; /* Увеличено с 12px 20px */
+    color: #333;
+    text-decoration: none;
+    font-family: 'Manrope', sans-serif;
+    font-size: 16px; /* Увеличено с 14px */
+    font-weight: 500;
+    transition: all 0.3s;
+    cursor: pointer;
+    background: white;
+    border: none;
+    width: 100%;
+    text-align: left;
+}
+
+.menu-item:hover {
+    background-color: rgba(42, 113, 121, 0.1);
+    color: #2A7179;
+}
+
+.menu-item:active {
+    background-color: rgba(42, 113, 121, 0.2);
+}
+
+/* Форма для выхода (чтобы использовать POST) */
+.menu-item-form {
+    margin: 0;
+    padding: 0;
+}
+
+.logout-btn {
+    width: 100%;
+    text-align: left;
+    font-family: 'Manrope', sans-serif;
+    font-size: 16px; /* Увеличено с 14px */
+    font-weight: 500;
+    color: #dc3545;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 14px 24px; /* Увеличено */
+}
+
+.logout-btn:hover {
+    background-color: rgba(220, 53, 69, 0.1);
+    color: #dc3545;
+}
+
+/* Разделитель в меню */
+.menu-divider {
+    height: 1px;
+    background: linear-gradient(to right, transparent, rgba(42, 113, 121, 0.3), transparent);
+    margin: 8px 0; /* Увеличено с 5px */
+}
+/* Карточка с историей - УМЕНЬШЕН ОТСТУП СНИЗУ */
+.history-card {
+    width: 850px;
+    height: 520px;
+    border: 2px solid #2A7179;
+    box-shadow: 1px 2px 4px rgba(0, 0, 0, 0.25);
+    border-radius: 10px;
+    background: white;
+    z-index: 2;
+    padding: 30px 35px;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    margin-bottom: 20px; /* Уменьшено с 60px до 20px */
+}
+
+.history-title {
+    font-family: 'Manrope', sans-serif;
+    font-style: normal;
+    font-weight: 400;
+    font-size: 22px;
+    line-height: 140%;
+    text-align: center;
+    color: #2A7179;
+    margin-bottom: 25px;
+}
+
+.history-list {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    padding-right: 15px;
+}
+
+/* Стилизация скроллбара */
+.history-list::-webkit-scrollbar {
+    width: 8px;
+}
+
+.history-list::-webkit-scrollbar-track {
+    background: rgba(217, 217, 217, 0.5);
+    border-radius: 20px;
+}
+
+.history-list::-webkit-scrollbar-thumb {
+    background: #D9D9D9;
+    border-radius: 20px;
+    border: 0.2px solid rgba(0, 0, 0, 0.1);
+}
+
+.history-item {
+    display: flex;
+    align-items: center;
+    gap: 25px;
+    padding: 15px 20px;
+    border: 0.6px solid rgba(42, 113, 121, 0.5);
+    box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.25);
+    border-radius: 10px;
+    background: white;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    text-decoration: none;
+    color: inherit;
+    position: relative;
+}
+
+.history-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.15);
+    border-color: #2A7179;
+}
+
+/* Кнопка удаления */
+.delete-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 22px;
+    height: 22px;
+    background: rgba(220, 53, 69, 0.1);
+    border: 1px solid #dc3545;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #dc3545;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s;
+    opacity: 0;
+    z-index: 5;
+}
+
+.history-item:hover .delete-btn {
+    opacity: 1;
+}
+
+.delete-btn:hover {
+    background: #dc3545;
+    color: white;
+    transform: scale(1.1);
+}
+
+/* Увеличенные иконки с изображениями */
+.item-thumbnail {
+    width: 110px;
+    height: 118px;
+    border: 2px solid rgba(255, 108, 12, 0.8);
+    border-radius: 10px;
+    overflow: hidden;
+    flex-shrink: 0;
+    background: #f5f5f5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.thumbnail-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.3s;
+}
+
+.history-item:hover .thumbnail-image {
+    transform: scale(1.05);
+}
+
+.thumbnail-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #e0e0e0, #f5f5f5);
+    color: #999;
+    font-size: 42px;
+}
+
+.item-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.item-date {
+    font-family: 'Manrope', sans-serif;
+    font-style: normal;
+    font-weight: 600;
+    font-size: 17px;
+    line-height: 140%;
+    color: #2A7179;
+}
+
+.item-time {
+    font-family: 'Manrope', sans-serif;
+    font-style: normal;
+    font-weight: 400;
+    font-size: 15px;
+    line-height: 140%;
+    color: rgba(0, 0, 0, 0.6);
+}
+
+.item-edited {
+    font-family: 'Manrope', sans-serif;
+    font-style: normal;
+    font-weight: 400;
+    font-size: 13px;
+    line-height: 140%;
+    color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.item-edited i {
+    font-style: normal;
+    color: #FF6C0C;
+    font-size: 15px;
+}
+
+.divider {
+    width: 100%;
+    height: 0;
+    border: 0.5px solid #E8E8E8;
+    margin: 20px 0 10px 0;
+}
+
+/* Футер - ОПУЩЕН НИЖЕ */
+.site-footer {
+    position: absolute;
+    bottom: 30px; /* Уменьшено с 30px до 10px */
+    left: 0;
+    width: 100%;
+    text-align: center;
+    font-family: 'Manrope', sans-serif;
+    font-style: normal;
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 140%;
+    color: rgba(0, 0, 0, 0.8);
+    z-index: 3;
+    padding: 15px 0;
+    background: transparent;
+    border-top: 1px solid rgba(42, 113, 121, 0.2);
+}
+
+.site-footer p {
+    margin: 0;
+    padding: 0;
+    background: transparent;
+    display: inline-block;
+    padding: 0;
+    border-radius: 0;
+    backdrop-filter: none;
+    font-weight: 400;
+    letter-spacing: normal;
+    box-shadow: none;
+    text-shadow: 0 1px 3px rgba(255, 255, 255, 0.8);
+}
+
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: #999;
+    font-size: 16px;
+    text-align: center;
+    padding: 30px;
+    gap: 15px;
+}
+
+.empty-state p {
+    margin: 0;
+}
+
+.empty-state .nav-link {
+    font-size: 14px;
+    color: #2A7179;
+    text-decoration: underline;
+}
+
+/* Адаптивность */
+@media (max-width: 1000px) {
+    .history-card {
+        width: 95%;
+        max-width: 800px;
+        height: 500px;
+        padding: 25px;
+        margin-bottom: 15px; /* Уменьшено */
+    }
+    
+    .logo {
+        width: 180px;
+        height: auto;
+    }
+    
+    .menu-icon {
+        width: 60px;
+        height: 60px;
+    }
+    
+    .site-footer {
+        font-size: 14px;
+        bottom: 8px; /* Уменьшено */
+    }
+}
+
+@media (max-width: 900px) {
+    .history-card {
+        width: 95%;
+        max-width: 750px;
+        height: 480px;
+        padding: 22px;
+        margin-bottom: 15px; /* Уменьшено */
+    }
+    
+    .logo {
+        width: 160px;
+        height: auto;
+        top: 12px;
+        left: 20px;
+    }
+    
+    .menu-container {
+        top: 12px;
+        right: 20px;
+    }
+    
+    .menu-icon {
+        width: 55px;
+        height: 55px;
+    }
+    
+    .item-thumbnail {
+        width: 95px;
+        height: 103px;
+    }
+    
+    .site-footer {
+        font-size: 13px;
+        bottom: 8px; /* Уменьшено */
+    }
+}
+
+@media (max-width: 768px) {
+    .history-card {
+        width: 95%;
+        max-width: 650px;
+        height: 420px;
+        padding: 18px;
+        margin-bottom: 12px; /* Уменьшено */
+    }
+    
+    .logo {
+        width: 140px;
+        height: auto;
+    }
+    
+    .menu-icon {
+        width: 50px;
+        height: 50px;
+    }
+    
+    .history-title {
+        font-size: 18px;
+    }
+    
+    .item-thumbnail {
+        width: 85px;
+        height: 93px;
+    }
+    
+    .item-date {
+        font-size: 15px;
+    }
+    
+    .item-time {
+        font-size: 13px;
+    }
+    
+    .item-edited {
+        font-size: 11px;
+    }
+    
+    .site-footer {
+        font-size: 12px;
+        bottom: 8px; /* Уменьшено */
+    }
+}
+
+@media (max-width: 480px) {
+    .history-card {
+        height: 380px;
+        padding: 12px;
+        margin-bottom: 10px; /* Уменьшено */
+    }
+    
+    .logo {
+        width: 120px;
+        height: auto;
+    }
+    
+    .menu-icon {
+        width: 45px;
+        height: 45px;
+    }
+    
+    .history-title {
+        font-size: 16px;
+        margin-bottom: 12px;
+    }
+    
+    .item-thumbnail {
+        width: 75px;
+        height: 83px;
+    }
+    
+    .item-date {
+        font-size: 14px;
+    }
+    
+    .item-time {
+        font-size: 12px;
+    }
+    
+    .item-edited {
+        font-size: 10px;
+    }
+    
+    .site-footer {
+        font-size: 11px;
+        bottom: 5px; /* Уменьшено */
+    }
+}
+
+/* Дополнительные стили для анимации удаления */
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+}
+
+.history-item-wrapper {
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.delete-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 22px;
+    height: 22px;
+    background: rgba(220, 53, 69, 0.1);
+    border: 1px solid #dc3545;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #dc3545;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s;
+    opacity: 0;
+    z-index: 5;
+}
+
+.history-item-wrapper:hover .delete-btn {
+    opacity: 1;
+}
+
+.delete-btn:hover {
+    background: #dc3545;
+    color: white;
+    transform: scale(1.1);
+}

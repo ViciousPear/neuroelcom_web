@@ -353,7 +353,7 @@ export class FileUploadHandler {
             });
             
             if (response.type === 'opaqueredirect' || response.status === 302 || response.status === 0) {
-                const redirectUrl = response.headers.get('Location') || '/results/';
+                const redirectUrl = response.headers.get('Location') || '/edit_results/';
                 window.location.href = redirectUrl;
                 return;
             }

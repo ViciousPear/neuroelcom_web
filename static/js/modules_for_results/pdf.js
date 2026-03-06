@@ -114,7 +114,7 @@ export function createPDF() {
     //  Рассчет итоговой суммы
     if (itemCount > 0) {
         const totalWithoutVat = grandTotal;
-        const vatAmount = grandTotal * 0.2;  // НДС 20%
+        const vatAmount = grandTotal * 0.22;  // НДС 22%
         const totalWithVat = grandTotal + vatAmount;
         
         // Форматирование суммы для отображения (с "руб.")

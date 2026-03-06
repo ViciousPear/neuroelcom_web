@@ -1,0 +1,194 @@
+{% extends 'base_clean.html' %}
+{% load static %}
+
+{% block title %}Мой профиль{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/profile.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="profile-wrapper">
+    <!-- Убираем profile-background, так как фон уже есть в profile-wrapper -->
+    
+    <div class="profile-card">
+        <!-- Кнопка домой -->
+        <a href="{% url 'upload' %}" class="home-button">
+            <img src="{% static 'images/home_icon.png' %}" alt="На главную">
+        </a>
+        
+        <!-- Приветствие -->
+        <h2 class="welcome-title">Добро пожаловать, {{ user.username }}!</h2>
+        
+        <!-- Контент профиля -->
+        <div class="profile-content">
+            <div class="avatar-section">
+                <div class="avatar-placeholder">
+                    {% if user.avatar %}
+                        <img src="{{ user.avatar.url }}" alt="Avatar" class="avatar-image">
+                    {% else %}
+                        <div class="avatar-icon">
+                            <!-- Вариант 1: Текстовый символ -->
+                            <!-- 👤 -->
+                            
+                            <!-- Вариант 2: SVG иконка (раскомментируйте если нужно) -->
+                            <svg viewBox="0 0 24 24" fill="white" width="80px" height="80px">
+                                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                            </svg>
+                        </div>
+                    {% endif %}
+                </div>
+                <button class="edit-avatar-btn" id="editAvatarBtn">Редактировать</button>
+            </div>
+            
+            <!-- Правая колонка - информация -->
+            <div class="info-section">
+                <!-- Первая строка: Имя и Номер телефона -->
+                <div class="info-row">
+                    <div class="info-item">
+                        <div class="info-label">Имя</div>
+                        <div class="info-value">{{ user.first_name|default:'—' }}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Номер телефона</div>
+                        <div class="info-value">{{ user.phone|default:'—' }}</div>
+                    </div>
+                </div>
+                
+                <!-- Вторая строка: Фамилия и Email -->
+                <div class="info-row">
+                    <div class="info-item">
+                        <div class="info-label">Фамилия</div>
+                        <div class="info-value">{{ user.last_name|default:'—' }}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Email</div>
+                        <div class="info-value">{{ user.email }}</div>
+                    </div>
+                </div>
+                
+                <!-- Третья строка: Компания и Должность -->
+                <div class="info-row">
+                    <div class="info-item">
+                        <div class="info-label">Компания</div>
+                        <div class="info-value">{{ user.company|default:'—' }}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Должность</div>
+                        <div class="info-value">{{ user.position|default:'—' }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Кнопки действий -->
+        <div class="profile-actions">
+            <a href="{% url 'dashboard' %}" class="history-btn">Перейти к истории</a>
+        </div>
+    </div>
+    
+    <!-- Футер -->
+    <div class="profile-footer">
+        <p>© 1998–2026 ООО «Элком». Все права защищены.</p>
+    </div>
+</div>
+
+<!-- Модальное окно для редактирования профиля -->
+<div id="editProfileModal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" id="closeModal">&times;</span>
+        <h3 class="modal-title">Редактировать профиль</h3>
+        
+        <form method="post" enctype="multipart/form-data" id="profileForm">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label class="form-label">Имя</label>
+                <input type="text" name="first_name" value="{{ user.first_name }}" class="form-input">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Фамилия</label>
+                <input type="text" name="last_name" value="{{ user.last_name }}" class="form-input">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Телефон</label>
+                <input type="text" name="phone" value="{{ user.phone }}" class="form-input">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Email</label>
+                <input type="email" name="email" value="{{ user.email }}" class="form-input" readonly disabled>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Компания</label>
+                <input type="text" name="company" value="{{ user.company|default:'' }}" class="form-input">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Должность</label>
+                <input type="text" name="position" value="{{ user.position|default:'' }}" class="form-input">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Аватар</label>
+                <input type="file" name="avatar" accept="image/*" class="form-input-file">
+            </div>
+            
+            <button type="submit" class="modal-submit-btn">Сохранить изменения</button>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const editBtn = document.getElementById('editProfileBtn');
+    const editAvatarBtn = document.getElementById('editAvatarBtn');
+    const modal = document.getElementById('editProfileModal');
+    const closeBtn = document.getElementById('closeModal');
+    
+    // Функция открытия модального окна
+    function openModal() {
+        modal.classList.add('show');
+        document.body.style.overflow = 'hidden'; // Запрещаем скролл body
+    }
+    
+    // Функция закрытия модального окна
+    function closeModal() {
+        modal.classList.remove('show');
+        document.body.style.overflow = ''; // Возвращаем скролл
+    }
+    
+    // Открытие модального окна по кнопке "Редактировать"
+    if (editBtn) {
+        editBtn.addEventListener('click', openModal);
+    }
+    
+    // Открытие модального окна по кнопке редактирования аватара
+    if (editAvatarBtn) {
+        editAvatarBtn.addEventListener('click', openModal);
+    }
+    
+    // Закрытие по крестику
+    if (closeBtn) {
+        closeBtn.addEventListener('click', closeModal);
+    }
+    
+    // Закрытие при клике вне модального окна
+    window.addEventListener('click', function(e) {
+        if (e.target === modal) {
+            closeModal();
+        }
+    });
+    
+    // Закрытие по Escape
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && modal.classList.contains('show')) {
+            closeModal();
+        }
+    });
+});
+</script>
+{% endblock %}

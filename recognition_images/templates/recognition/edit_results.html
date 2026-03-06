@@ -1,0 +1,215 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Редактирование результатов распознавания</title>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" href="{% static 'images/logo_mini.ico' %}" type="image/x-icon">
+    <link rel="stylesheet" href="{% static 'css/edit_results.css' %}">
+</head>
+<body>
+    <header>
+        <div class="logo">
+            <img src="{% static '/images/logo_for_contacts.png' %}" alt="Логотип ЭЛКОМ">
+        </div>
+    </header>
+    
+    <main class="main-content">
+        <h1>Редактирование результатов распознавания</h1>
+        
+        <div class="container">
+            <!-- Секция изображения - СВЕРХУ -->
+            <div class="top-section">
+                <div class="image-container">
+                    {% if image_base64 %}
+                        <img id="detected-image" src="{{ image_base64 }}" alt="Результат распознавания" class="zoomable-image">
+                        <button class="zoom-btn" title="Увеличить изображение"></button>
+                    {% else %}
+                        <p class="no-image">Изображение не загружено</p>
+                    {% endif %}
+                </div>
+                
+                <!-- Модальное окно для увеличения изображения -->
+                <div class="modal-overlay" id="image-modal">
+                    <div class="modal-content">
+                        <span class="close-modal">&times;</span>
+                        <img src="" alt="Увеличенное изображение" id="modal-image">
+                        <div class="zoom-controls">
+                            <button class="zoom-in-btn" title="Увеличить">+</button>
+                            <button class="zoom-reset-btn" title="Сбросить">100%</button>
+                            <button class="zoom-out-btn" title="Уменьшить">-</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Секция редактирования - СНИЗУ -->
+            <div class="bottom-section">
+                <div class="edit-section">
+                    <h2>Распознанные элементы</h2>
+                    
+                    <div id="elements-container" class="elements-container">
+                        <!-- Элементы будут группироваться динамически по типам -->
+                        <div id="groups-container">
+                            <!-- Группы будут добавляться здесь -->
+                        </div>
+                        
+                        <!-- Пустое состояние -->
+                        <div id="empty-state" class="empty-state" style="display: none;">
+                            <p>Нет распознанных элементов</p>
+                            <button id="add-first-element" class="add-btn">+ Добавить первый элемент</button>
+                        </div>
+                    </div>
+                    
+                    <div class="actions">
+                        <button id="add-element" class="add-btn">+ Автоматический выключатель</button>
+                        <button id="add-transformer" class="add-btn">+ Трансформатор</button>
+                        <button id="add-counter" class="add-btn">+ Счетчик</button>
+                        <div class="main-actions">
+                            <button id="cancel-edit" class="btn-outline">Отмена</button>
+                            <button id="save-and-search" class="btn-primary">Сохранить и искать в БД</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <!-- Шаблоны элементов -->
+    <template id="group-template">
+        <div class="category-group" data-type="">
+            <div class="category-header">
+                <span class="category-title">Группа</span>
+                <span class="category-count">0 элементов</span>
+            </div>
+            <div class="group-elements">
+                <!-- Элементы будут добавляться здесь -->
+            </div>
+        </div>
+    </template>
+    
+    <template id="qf-element-template">
+        <div class="element-card" data-type="QF">
+            <div class="element-header">
+                <span class="element-number">1</span>
+                <button class="btn-delete" type="button">×</button>
+            </div>
+            
+            <div class="element-form qf-form">
+                
+                <div class="form-group">
+                    <label>Ток, А:</label>
+                    <input type="text" class="current-input" placeholder="Например: 16">
+                </div>
+                
+                <div class="form-group">
+                    <label>Напряжение, В:</label>
+                    <input type="text" class="voltage-input" placeholder="Например: 230">
+                </div>
+                
+                <div class="form-group">
+                    <label>Ток КЗ, кА:</label>
+                    <input type="text" class="current-close-input" placeholder="Например: 6">
+                </div>
+
+                <div class="form-group">
+                    <label>Название:</label>
+                    <input type="text" class="name-input" placeholder="Например: BA47-29">
+                </div>
+                
+                <div class="form-group">
+                    <label>Тип монтажного исполнения:</label>
+                    <select class="mounting-select">
+                        <option value="">Выберите тип</option>
+                        <option value="0">Стационарный</option>
+                        <option value="1">Втычной/Выкатной</option>
+                    </select>
+                </div>
+                
+                <div class="form-group small-input number-input">
+                <label>Кол-во полюсов:</label>
+                <input type="number" class="polus-input" min="1" max="4" defaultValue ="3" value="3" 
+                       step="1" inputmode="numeric" pattern="[1-4]" 
+                       title="Введите число от 1 до 4" placeholder="1-4">
+            </div>
+        </div>
+        </div>
+    </template>
+    
+    <template id="transformer-element-template">
+        <div class="element-card" data-type="transformer">
+            <div class="element-header">
+                <h3 class="element-title">
+                    <span class="element-number">1</span>
+                    Трансформатор
+                </h3>
+                <button class="btn-delete" type="button">×</button>
+            </div>
+            
+            <div class="element-form simple-form">
+                <div class="form-group">
+                    <label>Количество:</label>
+                    <input type="number" class="quantity-input" min="1" value="1" placeholder="Введите количество">
+                </div>
+            </div>
+        </div>
+    </template>
+    
+    <template id="counter-element-template">
+        <div class="element-card" data-type="counter">
+            <div class="element-header">
+                <h3 class="element-title">
+                    <span class="element-number">1</span>
+                    Счетчик
+                </h3>
+                <button class="btn-delete" type="button">×</button>
+            </div>
+            
+            <div class="element-form simple-form">
+                <div class="form-group">
+                    <label>Количество:</label>
+                    <input type="number" class="quantity-input" min="1" value="1" placeholder="Введите количество">
+                </div>
+            </div>
+        </div>
+    </template>
+    
+    <!-- Подключаем существующие модули -->
+    <script type="module" src="{% static 'js/modules_for_results/image-zoom.js' %}"></script>
+    <script type="module" src="{% static 'js/edit_results.js' %}"></script>
+    <script>
+        // Данные с сервера
+        window.DETECTED_DATA = {{ detected_data|safe }};
+        window.IMAGE_BASE64 = '{{ image_base64|escapejs }}';
+        window.RESULT_ID = '{{ result_id|escapejs }}';
+        
+        // Проверяем, что изображение уже загружено в src атрибуте
+        document.addEventListener('DOMContentLoaded', function() {
+            const detectedImage = document.getElementById('detected-image');
+            if (detectedImage) {
+                // Устанавливаем обработчики событий
+                detectedImage.onload = function() {
+                    console.log('Изображение успешно загружено');
+                };
+                
+                detectedImage.onerror = function() {
+                    console.error('ОШИБКА загрузки изображения');
+                    if (window.IMAGE_BASE64 && window.IMAGE_BASE64.startsWith('data:image')) {
+                        this.src = window.IMAGE_BASE64;
+                    }
+                };
+            }
+            
+            // Также устанавливаем изображение для модального окна
+            const modalImage = document.getElementById('modal-image');
+            if (modalImage && window.IMAGE_BASE64 && window.IMAGE_BASE64.startsWith('data:image')) {
+                modalImage.src = window.IMAGE_BASE64;
+            }
+        });
+    </script>
+</body>
+<footer class="site-footer">
+    <p>&copy; 1998–2026 ООО «Элком». Все права защищены.</p>
+</footer>
+</html>

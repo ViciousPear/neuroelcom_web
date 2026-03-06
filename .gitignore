@@ -1,0 +1,9 @@
+# Created by venv; see https://docs.python.org/3/library/venv.html
+
+media/temp
+media/results
+media/detection_results/*
+neuroelcom_web/__pycache__
+recognition_images/__pycache__
+**/__pycache__
+.venv/

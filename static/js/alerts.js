@@ -39,7 +39,7 @@ export function closeCustomAlert() {
 }
 
 // Функция для toast уведомлений
-export function showToast(message, type = 'info', title = '', duration = 5000) {
+export function showToast(message, type, title, duration = 5000) {
     const container = document.querySelector('.toast-container') || createToastContainer();
     
     const toast = document.createElement('div');

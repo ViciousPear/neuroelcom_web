@@ -105,50 +105,50 @@
                                 <button id="add" class="add-btn">+</button>
                             </div>
                             {% for group in category.groups %}
-                            <div class="element-group">
-                                <div class="combobox-row">
-                                    <div>{{ forloop.counter}}.</div>
-                                    <!-- Артикул -->
-                                    <div class="combobox-group">
-                                        <label>Артикул</label>
-                                        <select class="combobox combobox-art" data-linked="name price">
-                                            {% for option in group.article_options %}
-                                            <option value="{{ option.value }}">{{ option.text }}</option>
-                                            {% endfor %}
-                                        </select>
-                                    </div>
-                                    
-                                    <!-- Название -->
-                                    <div class="combobox-group">
-                                        <label>Название</label>
-                                        <select class="combobox combobox-name" data-linked="article price">
-                                            {% for option in group.name_options %}
-                                            <option value="{{ option.value }}">{{ option.text }}</option>
-                                            {% endfor %}
-                                        </select>
-                                    </div>
+                                <div class="element-group">
+                                    <div class="combobox-row">
+                                        <div>{{ forloop.counter}}.</div>
+                                        <!-- Артикул -->
+                                        <div class="combobox-group">
+                                            <label>Артикул</label>
+                                            <select class="combobox combobox-art" data-linked="name price">
+                                                {% for option in group.article_options %}
+                                                <option value="{{ option.value }}">{{ option.text }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                        
+                                        <!-- Название -->
+                                        <div class="combobox-group">
+                                            <label>Название</label>
+                                            <select class="combobox combobox-name" data-linked="article price">
+                                                {% for option in group.name_options %}
+                                                <option value="{{ option.value }}">{{ option.text }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
 
-                                     <!-- Количество подгрупп -->
-                                    <div class="combobox-group">
-                                        <label>Количество</label>
-                                            <input type="number" min="1" value="{{ group.group_count|default:1 }}" class="group-count-input">
-                                    </div>
-                                    
-                                    <!-- Цена -->
-                                    <div class="combobox-group">
-                                        <label>Цена</label>
-                                        <select class="combobox combobox-price" data-linked="article name">
-                                            {% for option in group.price_options %}
-                                            <option value="{{ option.value }}">{{ option.text }}</option>
-                                            {% endfor %}
-                                        </select>
-                                    </div>
-                                    <div class="actions">
-                                        <button id="delete" class="delete-btn">x</button>
+                                        <!-- Количество подгрупп -->
+                                        <div class="combobox-group">
+                                            <label>Количество</label>
+                                            <input type="number" min="1" value="{{ group.actual_quantity|default:1 }}" class="group-count-input">
+                                        </div>
+                                        
+                                        <!-- Цена -->
+                                        <div class="combobox-group">
+                                            <label>Цена</label>
+                                            <select class="combobox combobox-price" data-linked="article name">
+                                                {% for option in group.price_options %}
+                                                <option value="{{ option.value }}">{{ option.text }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                        <div class="actions">
+                                            <button id="delete" class="delete-btn">x</button>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                             {% endfor %}
+                                {% endfor %}
                             {% endif %} 
                         </div>
                     </div>
@@ -178,6 +178,6 @@
 
 </body>
  <footer class="site-footer">
-        <p>&copy; 1998–2025 ООО «Элком». Все права защищены.</p>
+        <p>&copy; 1998–2026 ООО «Элком». Все права защищены.</p>
 </footer>
 </html>

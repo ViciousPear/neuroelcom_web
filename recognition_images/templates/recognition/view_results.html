@@ -1,0 +1,125 @@
+{% extends 'base.html' %}
+
+{% block title %}Просмотр результата{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Личный кабинет</a></li>
+                    <li class="breadcrumb-item active">Просмотр результата</li>
+                </ol>
+            </nav>
+            
+            <h1>{{ result.name }}</h1>
+            <p class="text-muted">
+                Создан: {{ result.created_at|date:"d.m.Y H:i" }}
+                {% if result.is_favorite %}
+                    <span class="badge bg-warning">⭐ Избранное</span>
+                {% endif %}
+                {% if result.is_edited %}
+                    <span class="badge bg-success">Отредактировано</span>
+                {% else %}
+                    <span class="badge bg-secondary">Новый</span>
+                {% endif %}
+            </p>
+            
+            <hr>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>Изображение</h5>
+                        </div>
+                        <div class="card-body text-center">
+                            <img src="{{ result.image_base64 }}" alt="Result" 
+                                 class="img-fluid rounded" style="max-height: 400px;">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>Информация</h5>
+                        </div>
+                        <div class="card-body">
+                            <p><strong>ID результата:</strong> {{ result.result_id }}</p>
+                            <p><strong>Сессия:</strong> {{ result.session_key|truncatechars:15 }}</p>
+                            
+                            {% if result.detected_data %}
+                                <h6 class="mt-3">Распознанные данные:</h6>
+                                <pre class="bg-light p-3 rounded" style="max-height: 200px; overflow: auto;">{{ result.detected_data|pprint }}</pre>
+                            {% endif %}
+                            
+                            {% if result.edited_data %}
+                                <h6 class="mt-3">Отредактированные данные:</h6>
+                                <pre class="bg-light p-3 rounded" style="max-height: 200px; overflow: auto;">{{ result.edited_data|pprint }}</pre>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            {% if components %}
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>Компоненты ({{ components|length }})</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>Тип</th>
+                                            <th>Артикул</th>
+                                            <th>Название</th>
+                                            <th>Количество</th>
+                                            <th>Цена</th>
+                                            <th>Сумма</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for component in components %}
+                                        <tr>
+                                            <td>{{ component.get_component_type_display }}</td>
+                                            <td>{{ component.article }}</td>
+                                            <td>{{ component.name }}</td>
+                                            <td>{{ component.quantity }}</td>
+                                            <td>{{ component.price }} ₽</td>
+                                            <td>{{ component.price|floatformat:2 }} ₽</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            <div class="mt-4">
+                <a href="{% url 'dashboard' %}" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left"></i> Назад в личный кабинет
+                </a>
+                
+                {% if result.is_edited %}
+                    <a href="{% url 'results' %}" class="btn btn-primary">
+                        <i class="bi bi-table"></i> Перейти к результатам
+                    </a>
+                {% else %}
+                    <a href="{% url 'edit_results' %}" class="btn btn-warning">
+                        <i class="bi bi-pencil"></i> Редактировать
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

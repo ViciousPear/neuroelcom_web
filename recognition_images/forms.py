@@ -8,3 +8,7 @@ class UploadFileForm(forms.Form):
             'class': 'file-input'
         })
     )
+
+class EditDetectionForm(forms.Form):
+    elements = forms.JSONField(widget=forms.HiddenInput())
+    image_data = forms.CharField(widget=forms.HiddenInput())

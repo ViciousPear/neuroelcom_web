@@ -19,6 +19,20 @@
             </div>
         </div>
         <button type="submit" class="btn-upload">Загрузить</button>
+        {% if has_results_access %}
+    <div class="alert alert-info mb-4">
+        <p>У вас есть доступные результаты предыдущего распознавания</p>
+        <a href="{% url 'results' %}" class="btn btn-secondary" id="return-to-results">
+            Вернуться к последним результатам
+        </a>
+        </div>
+        {% endif %}
+        {% if error %}
+        <div class="alert alert-danger mt-3">
+            {{ error }}
+        </div>
+        {% endif %}
+    </div>
     </form>
     
 <div id="pdfModal" class="modal">
@@ -41,12 +55,15 @@
                 <!-- Панель инструментов под областью просмотра -->
                 <div class="pdf-toolbar">
                     <div class="toolbar-group">
-                        <button id="rotateLeft" class="tool-btn">
-                            <i class="rotate-icon">↻</i> Повернуть
-                        </button>
-                        {% comment %} <button id="resetSelection" class="tool-btn">
-                            <i class="reset-icon">↺</i> Сбросить
-                        </button>  {% endcomment %}
+                    <button id="rotateLeft" class="tool-btn">
+                        <i class="rotate-icon">↻</i> Повернуть
+                    </button>
+                    <button id="toggleSelection" class="tool-btn">
+                        <i class="select-icon">▦</i> Выделить область
+                    </button>
+                    <button id="resetSelection" class="tool-btn" style="display: none;">
+                        <i class="reset-icon">↺</i> Сбросить выделение
+                    </button>
                     </div>
                     <div class="page-counter" id="pageCounter">
                         <span class="pages-total">Страницы (1)</span>
@@ -64,12 +81,12 @@
                         <button id="convertFullPage" class="action-btn primary">
                             <i class="send-icon">🡢</i> Отправить страницу
                         </button>
-                        {% comment %} <button id="convertSelection" class="action-btn secondary">
-                            <i class="select-icon">▦</i> Отправить выделенное
-                        </button> {% endcomment %}
+                        <button id="convertSelection" class="action-btn secondary" style="display: none;">
+                            <i class="crop-icon">✂</i> Отправить выделенное
+                        </button>
                     </div>
                 </div>
-                
+
                 <div class="sidebar-section">
                     <h4 class="section-title">Настройки</h4>
                     <div class="format-selector">
@@ -97,9 +114,14 @@
 {% block scripts %}
 {{ block.super }}
 <script>
-    // Передаем URL из Django в JavaScript
     const PROCESS_PDF_URL = "{% url 'process_pdf' %}";
 </script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.12.313/pdf.min.js"></script>  
+<script>
+window.API_URLS = {
+    checkResultsAccess: "{% url 'api_check_results_access' %}"
+};
+</script>
+<!-- Загружаем PDF.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
 <script type="module" src="{% static 'js/main.js' %}"></script>
 {% endblock %}

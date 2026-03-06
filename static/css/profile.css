@@ -1,0 +1,523 @@
+/* Сброс стилей */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Manrope', sans-serif;
+    overflow: hidden;
+}
+
+.profile-wrapper {
+    width: 100vw;
+    height: 100vh;
+    position: relative;
+    background: url('../images/elcom_graphic6.png') center/cover no-repeat;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+.profile-card {
+    box-sizing: border-box;
+    width: 900px;  /* Увеличено с 800px */
+    height: 480px; /* Увеличено с 400px */
+    background: rgba(76, 198, 212, 0.1);
+    border: 1px solid rgba(42, 113, 121, 0.06);
+    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.25);
+    backdrop-filter: blur(1.5px);
+    border-radius: 10px;
+    padding: 45px 50px; /* Увеличены отступы */
+    position: relative;
+    z-index: 2;
+}
+
+/* Кнопка домой */
+.home-button {
+    position: absolute;
+    top: 25px;
+    right: 30px;
+    width: 32px; /* Увеличена */
+    height: 32px; /* Увеличена */
+    cursor: pointer;
+    transition: transform 0.3s;
+    z-index: 3;
+}
+
+.home-button:hover {
+    transform: scale(1.1);
+}
+
+.home-button img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+/* Приветствие */
+.welcome-title {
+    font-family: 'Manrope', sans-serif;
+    font-style: normal;
+    font-weight: 400;
+    font-size: 18px; /* Увеличено с 14px */
+    line-height: 140%;
+    color: rgba(0, 0, 0, 0.77);
+    margin-bottom: 30px; /* Увеличен отступ */
+    padding-right: 50px;
+}
+
+/* Контент профиля */
+.profile-content {
+    display: flex;
+    gap: 50px; /* Увеличен отступ */
+    height: calc(100% - 100px); /* Адаптивная высота */
+}
+
+/* Левая колонка - аватар */
+.avatar-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 25px;
+    width: 180px;
+}
+
+.avatar-placeholder {
+    width: 160px;
+    height: 170px;
+    background: rgba(255, 218, 194, 0.6);
+    border-radius: 20px;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Стили для иконки-заглушки (когда нет изображения) */
+.avatar-icon {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #FF6C0C, #FF8C3A);
+    color: white;
+    font-size: 64px;
+    font-weight: 300;
+}
+
+/* Альтернативный вариант с SVG-иконкой */
+.avatar-icon svg {
+    width: 80px;
+    height: 80px;
+    fill: white;
+    opacity: 0.9;
+}
+
+/* .avatar-icon::before {
+    content: "👤";
+    font-size: 80px;
+    opacity: 0.8;
+} */
+
+/* Стили для изображения аватара */
+.avatar-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.edit-avatar-btn {
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    padding: 12px 16px;
+    gap: 8px;
+    width: 140px;
+    height: 36px;
+    background: #2A7179;
+    border: 1px solid #2A7179;
+    box-shadow: 1px 2px 8px rgba(0, 0, 0, 0.25);
+    border-radius: 10px;
+    font-family: 'Manrope', sans-serif;
+    font-style: normal;
+    font-weight: 700;
+    font-size: 13px;
+    line-height: 140%;
+    color: #F5F5F5;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.edit-avatar-btn:hover {
+    background: #1e555b;
+}
+
+/* Правая колонка - информация */
+.info-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 25px; /* Увеличен отступ */
+    padding-top: 10px;
+}
+
+.info-row {
+    display: flex;
+    gap: 30px; /* Увеличен отступ */
+}
+
+.info-item {
+    flex: 1;
+}
+
+.info-label {
+    font-family: 'Manrope', sans-serif;
+    font-style: normal;
+    font-weight: 400;
+    font-size: 13px; /* Увеличено с 10px */
+    line-height: 140%;
+    color: #2A7179;
+    margin-bottom: 8px; /* Увеличен отступ */
+}
+
+.info-value {
+    width: 100%;
+    min-width: 200px; /* Увеличено со 150px */
+    height: 38px; /* Увеличено с 30px */
+    background: #FFFFFF;
+    border: 1px solid #D9D9D9;
+    border-radius: 8px; /* Увеличено с 6px */
+    padding: 0 12px; /* Увеличены отступы */
+    font-family: 'Manrope', sans-serif;
+    font-size: 15px; /* Увеличено с 12px */
+    line-height: 38px; /* Соответствует высоте */
+    color: #333;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Кнопки действий */
+.profile-actions {
+    display: flex;
+    gap: 25px; /* Увеличен отступ */
+    margin-top: 35px; /* Увеличен отступ */
+    justify-content: flex-end;
+}
+
+.edit-btn {
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    padding: 12px 18px; /* Увеличены отступы */
+    gap: 10px;
+    width: 140px; /* Увеличено с 110px */
+    height: 38px; /* Увеличено с 28px */
+    background: #2A7179;
+    border: 1px solid #2A7179;
+    box-shadow: 1px 2px 8px rgba(0, 0, 0, 0.25);
+    border-radius: 10px; /* Увеличено с 8px */
+    font-family: 'Manrope', sans-serif;
+    font-style: normal;
+    font-weight: 700;
+    font-size: 13px; /* Увеличено с 10px */
+    line-height: 140%;
+    color: #F5F5F5;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.edit-btn:hover {
+    background: #1e555b;
+}
+
+.history-btn {
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    padding: 12px 18px; /* Увеличены отступы */
+    gap: 10px;
+    width: 180px; /* Увеличено со 140px */
+    height: 38px; /* Увеличено с 28px */
+    background: #2A7179;
+    border: 1px solid #2A7179;
+    box-shadow: 1px 2px 8px rgba(0, 0, 0, 0.25);
+    border-radius: 10px; /* Увеличено с 8px */
+    font-family: 'Manrope', sans-serif;
+    font-style: normal;
+    font-weight: 700;
+    font-size: 13px; /* Увеличено с 10px */
+    line-height: 140%;
+    color: #F5F5F5;
+    cursor: pointer;
+    transition: background 0.3s;
+    text-decoration: none;
+    display: inline-flex;
+}
+
+.history-btn:hover {
+    background: #1e555b;
+    text-decoration: none;
+    color: #F5F5F5;
+}
+
+.history-btn::after {
+    content: "→";
+    margin-left: 10px; /* Увеличен отступ */
+    font-size: 15px; /* Увеличена стрелка */
+}
+
+/* Футер*/
+.profile-footer {
+    position: absolute;
+    bottom: 30px;
+    left: 0;
+    width: 100%;
+    text-align: center;
+    font-family: 'Manrope', sans-serif;
+    font-style: normal;
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 140%;
+    color: rgba(0, 0, 0, 0.8);
+    z-index: 2;
+    padding: 15px 0;
+    background: transparent; /* Полностью прозрачный фон */
+    border-top: 1px solid rgba(42, 113, 121, 0.2);
+    backdrop-filter: none; /* Убираем размытие */
+}
+
+.profile-footer p {
+    margin: 0;
+    padding: 0;
+    display: inline-block;
+    text-shadow: 0 1px 3px rgba(255, 255, 255, 0.8); /* Легкая тень для читаемости на фоне */
+    background: transparent; /* Прозрачный фон для текста */
+}
+
+/* Модальное окно - УВЕЛИЧЕНО */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal.show {
+    display: flex;
+}
+
+.modal-content {
+    background: white;
+    border-radius: 16px; /* Увеличено */
+    width: 550px; /* Увеличено с 450px */
+    max-width: 95%;
+    max-height: 85vh;
+    overflow-y: auto;
+    padding: 45px 50px; /* Увеличены отступы */
+    position: relative;
+}
+
+.close-modal {
+    position: absolute;
+    top: 20px;
+    right: 25px;
+    font-size: 30px; /* Увеличено */
+    cursor: pointer;
+    color: #999;
+    transition: color 0.3s;
+}
+
+.close-modal:hover {
+    color: #333;
+}
+
+.modal-title {
+    color: #2A7179;
+    margin-bottom: 30px; /* Увеличен отступ */
+    font-size: 24px; /* Увеличено с 20px */
+    font-weight: 500;
+}
+
+.form-group {
+    margin-bottom: 22px; /* Увеличен отступ */
+}
+
+.form-label {
+    display: block;
+    font-size: 15px; /* Увеличено с 13px */
+    color: #2A7179;
+    margin-bottom: 8px; /* Увеличен отступ */
+    font-weight: 500;
+}
+
+.form-input {
+    width: 100%;
+    padding: 12px 15px; /* Увеличено с 10px */
+    border: 1px solid #D9D9D9;
+    border-radius: 8px; /* Увеличено */
+    font-family: 'Manrope', sans-serif;
+    font-size: 15px; /* Увеличено с 13px */
+    transition: all 0.3s;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: #2A7179;
+    box-shadow: 0 0 0 2px rgba(42, 113, 121, 0.2);
+}
+
+.form-input:disabled {
+    background: #f5f5f5;
+    cursor: not-allowed;
+}
+
+.form-input-file {
+    width: 100%;
+    padding: 12px 15px; /* Увеличено с 10px */
+    border: 1px solid #D9D9D9;
+    border-radius: 8px; /* Увеличено */
+    font-family: 'Manrope', sans-serif;
+    font-size: 14px; /* Увеличено */
+}
+
+.modal-submit-btn {
+    width: 100%;
+    padding: 14px 20px; /* Увеличено с 12px */
+    background: #2A7179;
+    color: white;
+    border: none;
+    border-radius: 10px; /* Увеличено с 8px */
+    cursor: pointer;
+    font-family: 'Manrope', sans-serif;
+    font-weight: 700;
+    font-size: 16px; /* Увеличено */
+    transition: background 0.3s;
+    margin-top: 15px;
+    letter-spacing: 0.5px;
+}
+
+.modal-submit-btn:hover {
+    background: #1e555b;
+}
+
+/* Адаптивность */
+@media (max-width: 1000px) {
+    .profile-card {
+        width: 95%;
+        max-width: 850px;
+        height: auto;
+        padding: 40px;
+    }
+    
+    .profile-content {
+        gap: 40px;
+    }
+    
+    .avatar-section {
+        width: 160px;
+    }
+    
+    .avatar-placeholder {
+        width: 140px;
+        height: 150px;
+    }
+}
+
+@media (max-width: 768px) {
+    .profile-card {
+        width: 95%;
+        padding: 30px;
+        height: auto;
+    }
+    
+    .profile-content {
+        flex-direction: column;
+        align-items: center;
+        gap: 30px;
+        height: auto;
+    }
+    
+    .avatar-section {
+        width: 100%;
+        flex-direction: row;
+        justify-content: center;
+        gap: 25px;
+    }
+    
+    .info-row {
+        flex-direction: column;
+        gap: 20px;
+    }
+    
+    .info-value {
+        width: 100%;
+        min-width: 100%;
+    }
+    
+    .profile-actions {
+        flex-direction: column;
+        align-items: center;
+        gap: 15px;
+    }
+    
+    .edit-btn, .history-btn {
+        width: 100%;
+        max-width: 250px;
+    }
+    
+    .profile-footer {
+        font-size: 11px;
+        padding: 12px 0;
+    }
+}
+
+@media (max-width: 480px) {
+    .profile-card {
+        padding: 25px;
+    }
+    
+    .avatar-section {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .welcome-title {
+        font-size: 16px;
+    }
+    
+    .info-label {
+        font-size: 12px;
+    }
+    
+    .info-value {
+        font-size: 14px;
+        height: 36px;
+    }
+    
+    .profile-footer {
+        font-size: 10px;
+        padding: 10px 0;
+    }
+}

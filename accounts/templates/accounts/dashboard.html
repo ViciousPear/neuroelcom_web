@@ -1,0 +1,132 @@
+{% extends 'base_clean.html' %}
+{% load static %}
+
+{% block title %}История запросов{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+<link rel="stylesheet" href="{% static 'css/alerts.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="history-wrapper">
+    <!-- Логотип -->
+    <div class="logo">
+        <img src="{% static 'images/logo_for_contacts.png' %}" alt="ЭЛКОМ">
+    </div>
+    
+    <!-- Кнопка контекстного меню -->
+    <div class="menu-container">
+        <button class="menu-button" id="menuButton" aria-label="Меню">
+            <img src="{% static 'images/menudown_icon.png' %}" 
+                 alt="Меню" 
+                 id="menuIcon"
+                 class="menu-icon">
+        </button>
+        
+        <!-- Выпадающее меню -->
+        <div class="dropdown-menu" id="dropdownMenu">
+            <a href="{% url 'profile' %}" class="menu-item">Перейти к профилю</a>
+            <a href="{% url 'upload' %}" class="menu-item">На главную</a>
+            <div class="menu-divider"></div>
+            <form method="post" action="{% url 'logout' %}" class="menu-item-form">
+                {% csrf_token %}
+                <button type="submit" class="menu-item logout-btn">Выход</button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Карточка с историей -->
+    <div class="history-card">
+        <h2 class="history-title">История запросов</h2>
+        
+        <div class="history-list">
+            {% if recent_results %}
+                {% for result in recent_results %}
+                <div class="history-item-wrapper" id="result-{{ result.result_id }}">
+                    <a href="{% url 'view_result' result.result_id %}" class="history-item">
+                        <!-- Увеличенная иконка с изображением -->
+                        <div class="item-thumbnail">
+                            {% if result.image_base64 %}
+                                <img src="{{ result.image_base64 }}" alt="Thumbnail" class="thumbnail-image">
+                            {% else %}
+                                <div class="thumbnail-placeholder">
+                                    <span>📷</span>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="item-info">
+                            <div class="item-date">{{ result.created_at|date:"d.m.Y" }}</div>
+                            <div class="item-time">{{ result.created_at|date:"H:i" }}</div>
+                            {% if result.is_edited %}
+                                <div class="item-edited">
+                                    <i>✎</i> Редактировано: {{ result.updated_at|date:"d.m.Y H:i"|default:result.created_at|date:"d.m.Y H:i" }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </a>
+                    <!-- Кнопка удаления -->
+                    <button class="delete-btn" onclick="confirmDelete('{{ result.result_id }}')">×</button>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state">
+                    <p>У вас пока нет сохраненных результатов</p>
+                    <a href="{% url 'upload' %}" class="nav-link">Загрузить первый файл</a>
+                </div>
+            {% endif %}
+        </div>
+        
+        <div class="divider"></div>
+    </div>
+    
+    <!-- Футер с копирайтом -->
+    <footer class="site-footer">
+        <p>© 1998–2026 ООО «Элком». Все права защищены.</p>
+    </footer>
+</div>
+
+<!-- Контейнер для тостов -->
+<div class="toast-container"></div>
+
+<!-- Кастомный confirm диалог -->
+<div id="confirmDialog" class="custom-alert" style="display: none;">
+    <div class="custom-alert-title">Подтверждение удаления</div>
+    <div class="custom-alert-message">Вы действительно хотите удалить этот результат из истории? Это действие нельзя отменить.</div>
+    <div class="custom-alert-buttons">
+        <button class="custom-alert-button cancel" onclick="closeConfirmDialog()">Отмена</button>
+        <button class="custom-alert-button confirm" id="confirmDeleteBtn">Удалить</button>
+    </div>
+</div>
+<div id="confirmOverlay" class="custom-alert-overlay" style="display: none;" onclick="closeConfirmDialog()"></div>
+
+<!-- Подключаем скрипты -->
+<!-- CSRF Token для AJAX запросов -->
+{% csrf_token %}
+
+<!-- Передаем данные из Django в JavaScript -->
+<script>
+    window.djangoMessages = [
+        {% for message in messages %}
+        {
+            message: "{{ message.message|escapejs }}",
+            tags: "{{ message.tags }}",
+        },
+        {% endfor %}
+    ];
+    window.djangoUser = {
+        isAuthenticated: {{ user.is_authenticated|yesno:"true,false" }}
+    };
+    
+    // Добавляем класс для CSS
+    if (window.djangoUser.isAuthenticated) {
+        document.body.classList.add('user-authenticated');
+    }
+</script>
+
+<!-- Подключаем скрипты в правильном порядке -->
+<script src="{% static 'js/toast.js' %}"></script>  <!-- Новый файл с тостами -->
+<script src="{% static 'js/alerts_for_history.js' %}"></script>
+<script src="{% static 'js/menu.js' %}"></script>
+<script src="{% static 'js/dashboard.js' %}"></script>
+{% endblock %}

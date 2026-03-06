@@ -18,10 +18,18 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from accounts import views as accounts_views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('accounts/', include('accounts.urls')),
     path('', include('recognition_images.urls')),
+    
+    # Добавляем dashboard в корень сайта
+    path('dashboard/', accounts_views.dashboard_view, name='dashboard'),
+    
+    # Добавляем удаление результатов (используя GET параметр)
+    path('results/delete/', accounts_views.delete_result, name='delete_result'),
 ]
 
 print("MEDIA_ROOT:", settings.MEDIA_ROOT)
