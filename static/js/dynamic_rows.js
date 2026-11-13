@@ -6,7 +6,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const categoryId = this.getAttribute('data-category');
             const container = document.getElementById(`category-${categoryId}`);
             
-            // Создаем новую строку
+            // Новая строка
             const newRow = document.createElement('div');
             newRow.className = 'item-row';
             newRow.innerHTML = `

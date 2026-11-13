@@ -41,41 +41,60 @@
         <h2 class="history-title">История запросов</h2>
         
         <div class="history-list">
-            {% if recent_results %}
-                {% for result in recent_results %}
-                <div class="history-item-wrapper" id="result-{{ result.result_id }}">
-                    <a href="{% url 'view_result' result.result_id %}" class="history-item">
-                        <!-- Увеличенная иконка с изображением -->
-                        <div class="item-thumbnail">
-                            {% if result.image_base64 %}
-                                <img src="{{ result.image_base64 }}" alt="Thumbnail" class="thumbnail-image">
-                            {% else %}
-                                <div class="thumbnail-placeholder">
-                                    <span>📷</span>
-                                </div>
-                            {% endif %}
+    {% if recent_results %}
+        {% for result in recent_results %}
+        <div class="history-item-wrapper" id="result-{{ result.result_id }}">
+            <!-- Основная ссылка для просмотра -->
+            <a href="{% url 'history_redirect' result.result_id %}" class="history-item">
+                <div class="item-thumbnail">
+                    {% if result.image_base64 %}
+                        <img src="{{ result.image_base64 }}" alt="Thumbnail" class="thumbnail-image">
+                    {% else %}
+                        <div class="thumbnail-placeholder">
+                            <span>📷</span>
                         </div>
-                        <div class="item-info">
-                            <div class="item-date">{{ result.created_at|date:"d.m.Y" }}</div>
-                            <div class="item-time">{{ result.created_at|date:"H:i" }}</div>
-                            {% if result.is_edited %}
-                                <div class="item-edited">
-                                    <i>✎</i> Редактировано: {{ result.updated_at|date:"d.m.Y H:i"|default:result.created_at|date:"d.m.Y H:i" }}
-                                </div>
-                            {% endif %}
+                    {% endif %}
+                </div>
+                <div class="item-info">
+                    <div class="item-date">{{ result.created_at|date:"d.m.Y" }}</div>
+                    <div class="item-time">{{ result.created_at|date:"H:i" }}</div>
+                    {% if result.is_edited %}
+                        <div class="item-edited">
+                            <i>✎</i> Редактировано: {{ result.edited_at|date:"d.m.Y H:i" }}
                         </div>
-                    </a>
-                    <!-- Кнопка удаления -->
-                    <button class="delete-btn" onclick="confirmDelete('{{ result.result_id }}')">×</button>
+                    {% endif %}
+                    {% if not result.results_viewed and result.status != 'finalized' %}
+                        <div class="item-status">
+                            <span class="status-badge status-pending">Не завершен</span>
+                        </div>
+                    {% elif result.status == 'finalized' %}
+                        <div class="item-status">
+                            <span class="status-badge status-completed">Завершен</span>
+                        </div>
+                    {% endif %}
                 </div>
-                {% endfor %}
-            {% else %}
-                <div class="empty-state">
-                    <p>У вас пока нет сохраненных результатов</p>
-                    <a href="{% url 'upload' %}" class="nav-link">Загрузить первый файл</a>
-                </div>
-            {% endif %}
+            </a>
+            
+            <!-- Кнопка редактирования (показываем для незавершенных результатов) -->
+            <button class="edit-btn" 
+                        onclick="window.location.href='{% url 'edit_results_by_id' result.result_id %}'"
+                        title="Редактировать результат">
+                    🖊
+            </button>
+            
+            <!-- Кнопка удаления -->
+            <button class="delete-btn" 
+            onclick="confirmDelete('{{ result.result_id }}')"
+            title="Удалить результат">×</button>
         </div>
+        {% endfor %}
+        {% else %}
+            <div class="empty-state">
+                <p>У вас пока нет сохраненных результатов</p>
+                <a href="{% url 'upload' %}" class="nav-link">Загрузить первый файл</a>
+            </div>
+        {% endif %}
+    </div>
         
         <div class="divider"></div>
     </div>

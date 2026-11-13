@@ -1,14 +1,12 @@
 // Функция для показа стилизованного alert
 export function showCustomAlert(message, title = 'Уведомление') {
-    // Создаем overlay
+    
     const overlay = document.createElement('div');
     overlay.className = 'custom-alert-overlay';
     
-    // Создаем alert
     const alert = document.createElement('div');
     alert.className = 'custom-alert';
     
-    // Создаем элементы через DOM вместо innerHTML
     const titleElement = document.createElement('div');
     titleElement.className = 'custom-alert-title';
     titleElement.textContent = title;
@@ -103,4 +101,72 @@ function createToastContainer() {
     container.className = 'toast-container';
     document.body.appendChild(container);
     return container;
+}
+
+export function confirmDialog(message, title = 'Подтверждение') {
+    return new Promise((resolve) => {
+        const overlay = document.createElement('div');
+        overlay.className = 'custom-alert-overlay';
+        
+        const dialog = document.createElement('div');
+        dialog.className = 'custom-confirm-dialog';
+        
+        const titleElement = document.createElement('div');
+        titleElement.className = 'custom-alert-title';
+        titleElement.textContent = title;
+        
+        const messageElement = document.createElement('div');
+        messageElement.className = 'custom-alert-message';
+        messageElement.textContent = message;
+        
+        const buttonsContainer = document.createElement('div');
+        buttonsContainer.className = 'confirm-buttons';
+        
+        const cancelButton = document.createElement('button');
+        cancelButton.className = 'custom-alert-button cancel-button';
+        cancelButton.textContent = 'Отмена';
+        cancelButton.addEventListener('click', () => {
+            cleanup();
+            resolve(false);
+        });
+        
+        const confirmButton = document.createElement('button');
+        confirmButton.className = 'custom-alert-button confirm-button';
+        confirmButton.textContent = 'Подтвердить';
+        confirmButton.addEventListener('click', () => {
+            cleanup();
+            resolve(true);
+        });
+        
+        buttonsContainer.appendChild(cancelButton);
+        buttonsContainer.appendChild(confirmButton);
+        
+        dialog.appendChild(titleElement);
+        dialog.appendChild(messageElement);
+        dialog.appendChild(buttonsContainer);
+        
+        document.body.appendChild(overlay);
+        document.body.appendChild(dialog);
+        
+        cancelButton.focus();
+        
+        const handleKeyDown = (e) => {
+            if (e.key === 'Escape') {
+                cleanup();
+                resolve(false);
+            }
+        };
+        document.addEventListener('keydown', handleKeyDown);
+        
+        overlay.addEventListener('click', () => {
+            cleanup();
+            resolve(false);
+        });
+        
+        function cleanup() {
+            if (overlay.parentElement) overlay.remove();
+            if (dialog.parentElement) dialog.remove();
+            document.removeEventListener('keydown', handleKeyDown);
+        }
+    });
 }

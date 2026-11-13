@@ -36,6 +36,7 @@ ALLOWED_HOSTS = ['127.0.0.1', 'pythonanywhere.viciouspear.com']
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
+    'anymail',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
@@ -167,11 +168,29 @@ SESSION_COOKIE_SECURE = IS_PRODUCTION
 CSRF_COOKIE_SECURE = IS_PRODUCTION
 SECURE_SSL_REDIRECT = IS_PRODUCTION
 
-# Время жизни сессии в секундах (по умолчанию 2 недели = 1209600)
-# SESSION_COOKIE_AGE = 172800  # 48 часов
 
-# Закрывать сессию при закрытии браузера
-SESSION_EXPIRE_AT_BROWSER_CLOSE = False  # True - закрывать, False - не закрывать
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'
+SESSION_COOKIE_AGE = 86400  # 1 день по умолчанию
+SESSION_SAVE_EVERY_REQUEST = True 
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 
-# Обновлять сессию при каждом запросе (продлевает жизнь)
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False  
 SESSION_SAVE_EVERY_REQUEST = True
+
+
+# Email настройки для разработки (вывод в консоль)
+# EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+# Для продакшена
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'mx.elcomspb.ru' 
+EMAIL_PORT = 465
+EMAIL_USE_SSL = True
+EMAIL_USE_TLS = False
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
+DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL')
+os.getenv
+
+# URL сайта для ссылок в письмах (для разработки)
+SITE_URL = 'http://127.0.0.1:8000'

@@ -19,6 +19,7 @@
             </div>
         </div>
         <button type="submit" class="btn-upload">Загрузить</button>
+
         {% if has_results_access %}
     <div class="alert alert-info mb-4">
         <p>У вас есть доступные результаты предыдущего распознавания</p>
@@ -102,6 +103,55 @@
         </div>
     </div>
 </div>
+
+<!-- Модальное окно для редактирования изображения -->
+<div id="imageModal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal close-image-modal">&times;</span>
+        <h3>Редактирование изображения</h3>
+        <div class="modal-scroll-container">
+            <!-- Контейнер для изображения с горизонтальным скроллом -->
+             <div class="image-main-container">
+                <!-- Основная область просмотра -->
+                 <div class="image-viewer-container">
+                    <div id="imagePreview" class="image-viewer">
+                        <!-- Изображение будет отображаться здесь -->
+                    </div>
+                    <!-- Панель инструментов под областью просмотра -->
+                     <div class="image-toolbar">
+                        <div class="toolbar-group">
+                            <button id="imageRotateLeft" class="tool-btn">
+                                 <i class="rotate-icon">↻</i> Повернуть
+                            </button>
+                            <button id="imageToggleSelection" class="tool-btn">
+                                 <i class="select-icon">▦</i> Выделить область
+                            </button>
+                            <button id="imageResetSelection" class="tool-btn">
+                                 <i class="reset-icon">↺</i> Сбросить выделение
+                            </button>
+                        </div>
+                     </div>
+                 </div>
+
+                 <!-- Боковая панель с действиями -->
+                <div class="image-sidebar">
+                    <div class="sidebar-section">
+                        <h4 class="section-title">Действия</h4>
+                        <div class="image-actions">
+                            <button id="sendFullImage" class="action-btn primary">
+                                <i class="send-icon">🡢</i> Отправить всё изображение
+                            </button>
+                            <button id="sendImageSelection" class="action-btn secondary" style="display: none;">
+                                <i class="crop-icon">✂</i> Отправить выделенное
+                            </button>
+                        </div>
+                    </div>
+             </div>
+        </div>
+    </div>
+</div>
+
+
 
     {% if error %}
     <div class="error-message">

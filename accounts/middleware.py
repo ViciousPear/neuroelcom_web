@@ -28,6 +28,8 @@ class ClearMessagesMiddleware:
         
         return response
 
+# middleware.py
+
 class DynamicSessionMiddleware:
     """Middleware для динамического управления временем жизни сессии"""
     
@@ -35,18 +37,20 @@ class DynamicSessionMiddleware:
         self.get_response = get_response
     
     def __call__(self, request):
-        # Обрабатываем запрос
+        # установка обработки view
+        if hasattr(request, 'session') and request.session.session_key:
+            if request.user.is_authenticated:
+                request.session.set_expiry(2592000)  # 30 дней
+            else:
+                request.session.set_expiry(86400)   # 1 день
+        
         response = self.get_response(request)
         
-        # После обработки запроса обновляем время жизни сессии
+        # Логирование сессий после обработки
         if hasattr(request, 'session') and request.session.session_key:
             session_key = request.session.session_key
             
             if request.user.is_authenticated:
-                # Для авторизованных - 30 дней
-                request.session.set_expiry(2592000)  # 30 дней
-                
-                # Получаем или создаем запись о сессии
                 user_session, created = UserSession.objects.update_or_create(
                     session_key=session_key,
                     defaults={
@@ -58,14 +62,8 @@ class DynamicSessionMiddleware:
                     }
                 )
                 
-                # Если сессия только что создана, связываем с ней результаты
                 if created and hasattr(request, 'session_results'):
-                    # Связываем результаты из этой сессии
                     for result in request.session_results:
                         user_session.results.add(result)
-                
-            else:
-                # Для гостей - 1 день
-                request.session.set_expiry(86400)  # 1 день
         
         return response

@@ -1,3 +1,4 @@
+
     body {
     font-family: 'Manrope', sans-serif;
     margin: 0;
@@ -51,6 +52,40 @@
         gap: 10px;
     }
 }
+    header {
+    display: flex;
+    justify-content: space-between; /* Логотип слева, кнопка дома справа */
+    align-items: center;
+    width: 100%;
+    padding: 10px 20px;
+    box-sizing: border-box;
+    background: transparent;
+    margin-bottom: 20px;
+}
+
+    /* Стили для кнопки "На главную" */
+    .home-button {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 60px;
+        height: 60px;
+        background: #2A7179;
+        border-radius: 50%;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .home-button:hover {
+        background: #1d5a61;
+        transform: scale(1.05);
+    }
+
+    .home-button img {
+        width: 30px;
+        height: 30px;
+        filter: brightness(0) invert(1); /* Делает иконку белой */
+    }
 
     .logo img{
         width: 250px;  /* или auto, если нужно сохранить пропорции */
@@ -338,11 +373,27 @@
     }
 
     .combobox-row-grouped {
-        display: grid;
-        grid-template-columns: 0.1fr 2fr 2fr 2fr 0.5fr;
-        gap: 15px;
-        margin-bottom: 15px;
-    }
+    display: grid;
+    /* Настраиваем пропорции для 6 колонок: номер, маркировка, артикул, название, цена, кнопка */
+    grid-template-columns: 0.1fr 0.5fr 1fr 3.5fr 1.5fr 0.5fr;
+    gap: 15px;
+    margin-bottom: 15px;
+    align-items: end; /* Выравнивание по нижнему краю */
+    width: 100%; /* Важно: занимает всю ширину */
+    box-sizing: border-box;
+}
+
+
+
+    .combobox-group select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-family: 'Manrope', sans-serif;
+    font-size: 14px;
+    background-color: #f9f9f9;
+}
 
     .combobox-row > div:first-child,
     .combobox-row-grouped > div:first-child {
@@ -384,6 +435,29 @@
         background-color: #f9f9f9;
     }
 
+    .marking-input {
+         width: 100% !important; /* Переопределяем ширину */
+        padding: 10px;
+        border: 1px solid #2A7179; /* Бирюзовая рамка */
+        border-radius: 6px;
+        font-family: 'Manrope', sans-serif;
+        font-size: 14px;
+        background-color: #f0f0f0; /* Серый фон */
+        color: #2A7179; /* Бирюзовый текст */
+        font-weight: 500;
+        cursor: default;
+        box-sizing: border-box;
+    }
+
+    .combobox-group input:not(.marking-input) {
+        width: 70%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        font-family: 'Manrope', sans-serif;
+        font-size: 14px;
+        background-color: #f9f9f9;
+    }
     .actions {
         width: 100%; /* Занимает всю доступную ширину */
         max-width: 1200px; /* Ограничиваем максимальную ширину, если нужно */
@@ -610,4 +684,3 @@
         opacity: 0;
     }
 }
-

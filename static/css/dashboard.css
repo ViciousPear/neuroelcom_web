@@ -609,3 +609,150 @@ body {
     color: white;
     transform: scale(1.1);
 }
+
+/* Стили для кнопки редактирования */
+.edit-btn {
+    position: absolute;
+    top: 8px;
+    right: 35px; /* Слева от кнопки удаления (которая на right: 8px) */
+    width: 22px;
+    height: 22px;
+    background: rgba(255, 193, 7, 0.1);
+    border: 1px solid #FF6C0C;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #FF6C0C;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s;
+    opacity: 0;
+    z-index: 5;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+.history-item-wrapper:hover .edit-btn {
+    opacity: 1;
+}
+
+.edit-btn:hover {
+    background: #ff6d0cc4;
+    color: white;
+    transform: scale(1.1);
+}
+
+/* Бейдж для завершенных результатов (вместо кнопки редактирования) */
+.completed-badge {
+    position: absolute;
+    top: 8px;
+    right: 35px; /* Такая же позиция как у edit-btn */
+    width: 22px;
+    height: 22px;
+    background: rgba(40, 167, 69, 0.1);
+    border: 1px solid #28a745;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #28a745;
+    font-size: 14px;
+    font-weight: bold;
+    z-index: 5;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.history-item-wrapper:hover .completed-badge {
+    opacity: 1;
+}
+
+/* Стили для статуса "Не завершен" */
+.item-status {
+    margin-top: 4px;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 500;
+    font-family: 'Manrope', sans-serif;
+}
+
+.status-pending {
+    background: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffc107;
+}
+
+.status-completed {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #28a745;
+}
+
+.status-edited {
+    background: #cce5ff;
+    color: #004085;
+    border: 1px solid #007bff;
+}
+
+/* Адаптация для мобильных устройств */
+@media (max-width: 768px) {
+    .edit-btn,
+    .completed-badge {
+        width: 20px;
+        height: 20px;
+        right: 30px;
+        font-size: 12px;
+    }
+    
+    .delete-btn {
+        right: 6px;
+        width: 20px;
+        height: 20px;
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 480px) {
+    .edit-btn,
+    .completed-badge {
+        width: 18px;
+        height: 18px;
+        right: 25px;
+        font-size: 11px;
+    }
+    
+    .delete-btn {
+        right: 5px;
+        width: 18px;
+        height: 18px;
+        font-size: 12px;
+    }
+    
+    .status-badge {
+        font-size: 9px;
+        padding: 2px 6px;
+    }
+}
+
+/* Анимация для появления кнопок */
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.history-item-wrapper:hover .edit-btn,
+.history-item-wrapper:hover .delete-btn {
+    animation: slideInRight 0.3s ease;
+}

@@ -8,6 +8,7 @@
     <link rel="icon" href="{% static 'images/logo_mini.ico' %}" type="image/x-icon">
     <!-- Подключение CSS -->
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/pdf-modal-content.css' %}">
     
     <!-- Дополнительные блоки для head -->
     {% block extra_head %}{% endblock %}
@@ -57,8 +58,11 @@
         {% endblock %}
     </main>
 
+
+
     <footer class="site-footer">
         <!-- Общий footer -->
+        <p>Это ИИ на этапах тестирования. Внимательно перепроверяйте информацию и контекст.</p>
         <p>&copy; 1998–2026 ООО «Элком». Все права защищены.</p>
     </footer>
 

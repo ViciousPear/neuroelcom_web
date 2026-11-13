@@ -198,7 +198,7 @@
             margin-bottom: 30px;
         }
         .contacts-table td {
-            vertical-align: middle; /* Изменили с top на middle */
+            vertical-align: middle; 
             padding: 0;
             border: none;
         }
@@ -208,7 +208,7 @@
             border: 1px solid #ddd;
             object-fit: cover;
             margin-right: 20px;
-            display: block; /* Добавили для лучшего контроля */
+            display: block; 
         }
         .contact-info {
             padding-left: 20px;
@@ -226,7 +226,7 @@
         }
 
         .main {
-           padding-bottom: 50mm; /* Отступ для футера + 5 отступов */
+           padding-bottom: 50mm; 
        }
        
         .footer {
@@ -271,7 +271,7 @@
             vertical-align: middle;
             font-size: 12px;
             line-height: 1.5;
-            padding-left: 20px; /* Отступ от границы */
+            padding-left: 20px;
         }
         
         .footer-contacts p {

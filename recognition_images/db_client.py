@@ -4,8 +4,6 @@ from typing import List, Dict
 from urllib.parse import quote
 import logging
 
-# Ваш существующий класс QF или его аналог
-# Если у вас нет QF класса, можно использовать словарь
 
 logger = logging.getLogger(__name__)
 
@@ -13,6 +11,7 @@ class DBClient:
     def __init__(self, base_url: str = None):
         self.base_url = base_url or os.getenv("DB_API_URL", "http://213.172.24.109:8001")
         self.session = requests.Session()
+        self.session.trust_env = False
         self.session.headers.update({
             'Accept': 'application/json',
             'Accept-Charset': 'utf-8'

@@ -15,7 +15,6 @@ export function createBlackAndWhiteImage(file) {
                 ctx.drawImage(img, 0, 0);
                 
                 try {
-                    // Функция синхронная, не нужно .then()
                     const bwCanvas = convertCanvasToBlackAndWhite(canvas);
                     resolve(bwCanvas);
                 } catch (error) {
@@ -40,14 +39,14 @@ export function convertToBlackAndWhiteWithQuality(canvas) {
         willReadFrequently: false
     });
     
-    // Устанавливаем качество
+    // Установка качества
     ctx.imageSmoothingEnabled = true;
     ctx.imageSmoothingQuality = 'high';
     
-    // Копируем с сохранением качества
+    // Копирование с сохранением качества
     ctx.drawImage(canvas, 0, 0);
     
-    // Конвертируем в ч/б
+    // Конвертация в ч/б
     const imageData = ctx.getImageData(0, 0, bwCanvas.width, bwCanvas.height);
     const data = imageData.data;
     
@@ -64,15 +63,15 @@ export function convertToBlackAndWhiteWithQuality(canvas) {
 }
 
 export function cropCanvasWithQuality(canvas, x, y, width, height) {
-    // Создаем canvas с сохранением DPI
+   
     const croppedCanvas = document.createElement('canvas');
     
-    // Сохраняем оригинальный DPI (умножаем на 2 для Retina/высокого DPI)
+    // Сохранение оригинального DPI (умножаем на 2 для Retina/высокого DPI)
     const dpiMultiplier = window.devicePixelRatio || 1;
     croppedCanvas.width = width * dpiMultiplier;
     croppedCanvas.height = height * dpiMultiplier;
     
-    // Устанавливаем отображаемый размер
+    // Установка отображаемого размера
     croppedCanvas.style.width = `${width}px`;
     croppedCanvas.style.height = `${height}px`;
     
@@ -124,7 +123,7 @@ export function convertCanvasToBlackAndWhite(canvas) {
     console.log('Converting to black and white with quality preservation');
     
     try {
-        // Создаем новый canvas с теми же размерами
+        
         const bwCanvas = document.createElement('canvas');
         bwCanvas.width = canvas.width;
         bwCanvas.height = canvas.height;
@@ -134,51 +133,46 @@ export function convertCanvasToBlackAndWhite(canvas) {
             desynchronized: false
         });
         
-        // Устанавливаем высокое качество
         ctx.imageSmoothingEnabled = true;
         ctx.imageSmoothingQuality = 'high';
         
-        // Рисуем исходное изображение
         ctx.drawImage(canvas, 0, 0);
         
-        // Получаем данные изображения
+        // Получение данных изображения
         const imageData = ctx.getImageData(0, 0, bwCanvas.width, bwCanvas.height);
         const data = imageData.data;
         
         // Оптимизированная конвертация в оттенки серого
         for (let i = 0; i < data.length; i += 4) {
-            // Быстрая формула для оттенков серого (окончательная)
+            // Формула для оттенков серого 
             const gray = (data[i] * 0.299 + data[i + 1] * 0.587 + data[i + 2] * 0.114);
             
-            data[i] = gray;     // Red
-            data[i + 1] = gray; // Green
-            data[i + 2] = gray; // Blue
-            // Alpha канал оставляем как есть (255 = непрозрачный)
+            data[i] = gray;     
+            data[i + 1] = gray; 
+            data[i + 2] = gray; 
             data[i + 3] = 255;
         }
         
-        // Записываем обработанные данные обратно
+        // Записы обработанных данных
         ctx.putImageData(imageData, 0, 0);
         
-        // Дополнительно: применяем небольшое повышение резкости
         applySharpening(bwCanvas, 0.3);
         
         return bwCanvas;
     } catch (error) {
         console.error('Error converting canvas to black and white:', error);
-        // Возвращаем оригинальный canvas в случае ошибки
+        // Возвращение оригинального canvas в случае ошибки
         return canvas;
     }
 }
 
-// Функция для повышения резкости (опционально)
+// Функция для повышения резкости 
 function applySharpening(canvas, strength = 0.3) {
     const ctx = canvas.getContext('2d');
     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
     const data = imageData.data;
     const width = canvas.width;
     
-    // Простой фильтр повышения резкости
     for (let y = 1; y < canvas.height - 1; y++) {
         for (let x = 1; x < width - 1; x++) {
             const idx = (y * width + x) * 4;
@@ -192,10 +186,10 @@ function applySharpening(canvas, strength = 0.3) {
             const grayLeft = data[idx - 4];
             const grayRight = data[idx + 4];
             
-            // Применяем фильтр
+            // Применение фильтра
             const sharpened = grayCenter + strength * (4 * grayCenter - grayTop - grayBottom - grayLeft - grayRight);
             
-            // Ограничиваем значения
+            // Ограничение значения
             const clamped = Math.max(0, Math.min(255, sharpened));
             
             data[idx] = clamped;

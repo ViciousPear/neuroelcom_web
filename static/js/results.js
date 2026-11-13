@@ -2,7 +2,7 @@ import { initComboboxes, syncComboboxes } from './modules_for_results/comboboxes
 import { initDeleteButtons, initAddButtons } from './modules_for_results/groups.js';
 import { initImageZoom } from './modules_for_results/image-zoom.js';
 import { createPDF } from './modules_for_results/pdf.js';
-import { initHomeButton } from './modules_for_results/init-home.js';
+import { initHomeButton, initEditButton } from './modules_for_results/init-home.js';
 import { showCustomAlert } from './alerts.js';
 
 
@@ -33,6 +33,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     initComboboxes();
+    initEditButton();
     initHomeButton();
     initImageZoom();
     initDeleteButtons();

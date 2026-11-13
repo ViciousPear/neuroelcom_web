@@ -1,4 +1,5 @@
 import { PDFHandler } from './modules_for_main/pdf-handler.js';
+import { ImageHandler } from './modules_for_main/image-handler.js';
 import { FileUploadHandler } from './modules_for_main/upload-file.js';
 import { showCustomAlert, showToast } from './alerts.js';
 import { convertCanvasToBlackAndWhite, convertToBlackAndWhiteWithQuality } from './modules_for_main/processing-image.js';
@@ -20,6 +21,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Инициализация обработчиков
     const pdfHandler = new PDFHandler();
     const fileUploadHandler = new FileUploadHandler();
+    const imageHandler = new ImageHandler(); 
 
     // Drag and Drop обработчики
     function preventDefaults(e) {
@@ -99,14 +101,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 
             } catch (error) {
                 fileUploadHandler.handleProcessError(error);
-                // Очищаем input при ошибке
+                // Очистка input при ошибке
                 fileInput.value = '';
             }
         }
     }
     dropArea.addEventListener('drop', handleDrop, false);
-
-    
 
     // Обработка выбора файла через диалог
     fileInput.addEventListener('change', function() {
@@ -117,14 +117,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 fileUploadHandler.clearMessages();
             } catch (error) {
                 fileUploadHandler.handleProcessError(error);
-                this.value = ''; // Очищаем input при ошибке
+                this.value = ''; 
             }
         }
     });
 
     // Обработка клика по dropArea
     dropArea.addEventListener('click', function(e) {
-        // Игнорируем клики по дочерним элементам
+       
         if (e.target !== dropArea && !e.target.classList.contains('drop-text')) {
             return;
         }
@@ -145,7 +145,7 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        // Если библиотека не загружена, пробуем загрузить
+        // Если библиотека не загружена, то попытка загрузить
         const existingScript = document.querySelector('script[src*="pdf.min.js"]');
         if (existingScript) {
             // Если скрипт уже есть, ждем его загрузки
@@ -166,12 +166,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 resolve(); // Разрешаем даже если не загрузилось
             }, 3000);
         } else {
-            // Пытаемся загрузить библиотеку
+            // Загрузка библиотеки для pdf
             const script = document.createElement('script');
             script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js';
             
             script.onload = () => {
-                // Даем время на инициализацию
+                // Время на инициализацию
                 setTimeout(() => {
                     if (pdfjsLib.GlobalWorkerOptions) {
                         pdfjsLib.GlobalWorkerOptions.workerSrc = 
@@ -240,7 +240,12 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         return;
     }
-    
+
+    // Обработка изображений
+    if (file.type.startsWith('image/') || /\.(jpg|jpeg|png|bmp|webp)$/i.test(file.name)) {
+        await imageHandler.showImageEditor(file);
+        return;
+    }
     // Обработка изображений
     await fileUploadHandler.processImageFile(file, form);
 });
@@ -262,16 +267,60 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    if (convertFullPageBtn) {
+   if (convertFullPageBtn) {
     convertFullPageBtn.addEventListener('click', async function() {
         if (!pdfHandler.currentPdf || fileUploadHandler.recognitionState.isProcessing) return;
         
-        // ВЫХОДИМ ИЗ РЕЖИМА ВЫДЕЛЕНИЯ ПЕРЕД ОТПРАВКОЙ
+        // Выход из режима выделения перед отправкой
         pdfHandler.deactivateSelectionAndReset();
         
-        fileUploadHandler.startProcessing();
-        
         try {
+            const page = await pdfHandler.currentPdf.getPage(pdfHandler.currentPageNum);
+            
+            // Базовый viewport (scale 1.0 = 72 DPI)
+            const viewport = page.getViewport({ scale: 1.0 });
+            
+            // Коэффициент рендера (при 96 DPI -> ~1.333)
+            const TARGET_DPI = 96;
+            const dpiScale = TARGET_DPI / 72;
+            
+            const widthInPixels = Math.round(viewport.width * dpiScale);
+            const heightInPixels = Math.round(viewport.height * dpiScale);
+            const maxSide = Math.max(widthInPixels, heightInPixels);
+            
+            console.log(`Эквивалентный размер страницы: ${widthInPixels}×${heightInPixels} px`);
+            
+            // ===== ПОРОГИ РАЗМЕРА =====
+            const MAX_ALLOWED_PIXELS = 6000; // Критический предел для отмены
+            const WARNING_THRESHOLD = 2500;   // Предел для предупреждения
+            
+            // 1. Критическая отмена (если сторона > 5000 px)
+            if (maxSide > MAX_ALLOWED_PIXELS) {
+                showToast(
+                    'Размер страницы слишком большой для обработки. Попробуйте выделить определенную область.',
+                    'error',
+                    'Слишком большой размер',
+                    10000
+                );
+                fileUploadHandler.endProcessing();
+                return; // ОСНОВНАЯ ТОЧКА ВЫХОДА: код ниже НЕ выполнится!
+            }
+            
+            // 2. Предупреждение (если сторона от 2500 px до 5000 px)
+            if (maxSide > WARNING_THRESHOLD) {
+                setTimeout(() => {
+                    showToast(
+                        'Обработка схемы большого формата может занять дополнительное время, пожалуйста, подождите.',
+                        'info',
+                        'Большой размер страницы',
+                        15000
+                    );
+                }, 5000); // 7000 миллисекунд = 7 секунд
+            }
+
+            // ===== ЕСЛИ ПРОВЕРКА ПРОЙДЕНА — НАЧИНАЕМ ОБРАБОТКУ =====
+            fileUploadHandler.startProcessing();
+
             const bwCanvas = await pdfHandler.convertCurrentPage(outputFormat.value);
             
             bwCanvas.toBlob(async (blob) => {
@@ -331,8 +380,9 @@ document.addEventListener('DOMContentLoaded', function() {
             }, `image/${outputFormat.value}`, 0.9);
 
             pdfHandler.closeModalHandler();
+
         } catch (error) {
-            console.error('Ошибка конвертации:', error);
+            console.error('Ошибка при обработке PDF:', error);
             fileUploadHandler.handleProcessError(error);
             fileUploadHandler.endProcessing();
             pdfHandler.closeModalHandler();
@@ -402,6 +452,7 @@ if (toggleSelectionBtn) {
     pdfHandler.toggleSelectionMode();
 });
 }
+
 
 if (resetSelectionBtn) {
     resetSelectionBtn.addEventListener('click', () => {
@@ -571,6 +622,291 @@ if (convertSelectionBtn) {
         }
     });
 }
+
+// ===== НОВЫЕ ОБРАБОТЧИКИ ДЛЯ МОДАЛЬНОГО ОКНА ИЗОБРАЖЕНИЯ =====
+const closeImageModal = document.querySelector('.close-image-modal');
+const imageRotateBtn = document.getElementById('imageRotateLeft');
+const imageToggleSelectionBtn = document.getElementById('imageToggleSelection');
+const imageResetSelectionBtn = document.getElementById('imageResetSelection');
+const sendFullImageBtn = document.getElementById('sendFullImage');
+const sendImageSelectionBtn = document.getElementById('sendImageSelection');
+
+// ПРОВЕРЯЕМ СУЩЕСТВОВАНИЕ ЭЛЕМЕНТОВ
+console.log('Image modal elements:', {
+    closeImageModal: closeImageModal,
+    imageRotateBtn: imageRotateBtn,
+    imageToggleSelectionBtn: imageToggleSelectionBtn,
+    imageResetSelectionBtn: imageResetSelectionBtn,
+    sendFullImageBtn: sendFullImageBtn,
+    sendImageSelectionBtn: sendImageSelectionBtn
+});
+
+if (closeImageModal) {
+    closeImageModal.addEventListener('click', () => imageHandler.closeModalHandler());
+} else {
+    console.warn('closeImageModal not found');
+}
+
+if (imageRotateBtn) {
+    imageRotateBtn.addEventListener('click', () => imageHandler.rotateImage());
+} else {
+    console.warn('imageRotateBtn not found');
+}
+
+if (imageToggleSelectionBtn) {
+    imageToggleSelectionBtn.addEventListener('click', () => imageHandler.toggleSelectionMode());
+} else {
+    console.warn('imageToggleSelectionBtn not found');
+}
+
+if (imageResetSelectionBtn) {
+    imageResetSelectionBtn.addEventListener('click', () => imageHandler.resetSelection());
+} else {
+    console.warn('imageResetSelectionBtn not found');
+}
+
+if (sendFullImageBtn) {
+    sendFullImageBtn.addEventListener('click', async function() {
+        if (!imageHandler.currentImage || fileUploadHandler.recognitionState.isProcessing) return;
+        
+        // Выходим из режима выделения
+        imageHandler.deactivateSelectionAndReset();
+        
+        try {
+            // ===== ПРОВЕРКА РАЗМЕРА ИЗОБРАЖЕНИЯ =====
+            const img = imageHandler.currentImage;
+            const width = img.naturalWidth;
+            const height = img.naturalHeight;
+
+            const maxSide = Math.max(width, height);
+            const megaPixels = (width * height) / 1000000; // Мегапиксели
+
+            console.log(`Размер изображения: ${width}×${height} px (${megaPixels.toFixed(1)} MP)`);
+
+            // ===== ПОРОГИ РАЗМЕРА =====
+            const MAX_SIDE_LIMIT = 12000;       // Максимальная сторона (12000 px)
+            const MAX_MEGAPIXELS_LIMIT = 144;   // Максимальная площадь (12000x12000 = 144 MP)
+            
+            const WARNING_SIDE_THRESHOLD = 4500; // Предупреждение от 5000 px
+
+            // 1. Критическая отмена (если превышает 12000 px или 144 MP):
+            if (maxSide > MAX_SIDE_LIMIT || megaPixels > MAX_MEGAPIXELS_LIMIT) {
+                showToast(
+                    'Изображение слишком крупное для обработки (превышает 12 000 px). Пожалуйста, выделите необходимую область или загрузите файл меньшего разрешения.',
+                    'error',
+                    'Размер превышен',
+                    10000
+                );
+                fileUploadHandler.endProcessing();
+                return; // ОСНОВНАЯ ТОЧКА ВЫХОДА: код ниже НЕ выполнится!
+            }
+
+            // 2. Предупреждение (если сторона > 5000 px):
+            if (maxSide > WARNING_SIDE_THRESHOLD) {
+                showToast(
+                    'Изображение имеет высокое разрешение. Обработка может занять некоторое время. Вы также можете выделить конкретную область.',
+                    'info',
+                    'Предупреждение',
+                    15000
+                );
+            }
+
+            // ===== ЕСЛИ ПРОВЕРКА ПРОЙДЕНА — НАЧИНАЕМ ОБРАБОТКУ =====
+            fileUploadHandler.startProcessing();
+
+            // Получаем canvas всего изображения
+            const bwCanvas = await imageHandler.getFullImageCanvas();
+            
+            bwCanvas.toBlob(async (blob) => {
+                const formData = new FormData();
+                formData.append('csrfmiddlewaretoken', fileUploadHandler.getCookie('csrftoken'));
+                formData.append('image', blob, `image_${Date.now()}.png`);
+                
+                try {
+                    const response = await fetch(PROCESS_PDF_URL, {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-CSRFToken': fileUploadHandler.getCookie('csrftoken')
+                        }
+                    });
+                    
+                    if (!response.ok) {
+                        const errorData = await response.json().catch(() => ({}));
+                        
+                        switch (response.status) {
+                            case 400:
+                                if (errorData.error === 'no_elements_detected') {
+                                    throw new Error('NO_ELEMENTS_FOUND');
+                                }
+                                throw new Error(errorData.message || 'Неверный запрос к серверу');
+                            
+                            case 413:
+                                throw new Error('Размер файла слишком большой');
+                            
+                            case 500:
+                                if (errorData.error === 'no_elements_detected') {
+                                    throw new Error('NO_ELEMENTS_FOUND');
+                                }
+                                throw new Error('Внутренняя ошибка сервера');
+                            
+                            case 502:
+                            case 503:
+                            case 504:
+                                throw new Error('CONNECTION_ERROR');
+                            default:
+                                throw new Error(`Ошибка сервера: ${response.status}`);
+                        }
+                    }
+                    
+                    const data = await response.json();
+                    if (data.redirect_url) {
+                        window.location.href = data.redirect_url;
+                    } else {
+                        fileUploadHandler.updateResults(data);
+                    }
+                } catch (error) {
+                    console.error('Ошибка загрузки:', error);
+                    fileUploadHandler.handleProcessError(error);
+                } finally {
+                    fileUploadHandler.endProcessing();
+                }
+            }, 'image/png', 0.9);
+
+            imageHandler.closeModalHandler();
+
+        } catch (error) {
+            console.error('Ошибка при обработке изображения:', error);
+            fileUploadHandler.handleProcessError(error);
+            fileUploadHandler.endProcessing();
+            imageHandler.closeModalHandler();
+        }
+    });
+}
+
+if (sendImageSelectionBtn) {
+    sendImageSelectionBtn.addEventListener('click', async function() {
+        console.log('Send image selection clicked');
+        
+        if (!imageHandler.currentImage || fileUploadHandler.recognitionState.isProcessing) {
+            return;
+        }
+        
+        if (!imageHandler.hasValidSelection()) {
+            showToast('Выделите область для отправки', 'warning', 'Предупреждение');
+            return;
+        }
+        
+        // Получаем выделенную область
+        let selectionCanvas = null;
+        try {
+            selectionCanvas = await imageHandler.getSelectionCanvas();
+            
+            if (!selectionCanvas) {
+                throw new Error('Не удалось получить выделенную область');
+            }
+        } catch (error) {
+            console.error('Error getting selection:', error);
+            showToast('Ошибка получения выделенной области', 'error', 'Ошибка');
+            return;
+        }
+        
+        // Сохраняем данные и закрываем модальное окно
+        imageHandler.deactivateSelectionAndReset();
+        document.body.style.cursor = '';
+        imageHandler.closeModalHandler();
+        
+        // Начинаем обработку
+        fileUploadHandler.startProcessing();
+        
+        try {
+            // Создаем blob из canvas (фиксированный формат PNG)
+            const blob = await new Promise((resolve, reject) => {
+                selectionCanvas.toBlob((blob) => {
+                    if (blob) {
+                        resolve(blob);
+                    } else {
+                        reject(new Error('Не удалось создать blob'));
+                    }
+                }, 'image/png', 0.9);
+            });
+            
+            // Подготовка формы
+            const formData = new FormData();
+            const csrfToken = fileUploadHandler.getCookie('csrftoken');
+            
+            if (!csrfToken) {
+                throw new Error('CSRF токен не найден');
+            }
+            
+            formData.append('csrfmiddlewaretoken', csrfToken);
+            
+            const fileName = `image_selection_${Date.now()}.png`;
+            formData.append('image', blob, fileName);
+            
+            // Отправка на сервер
+            const response = await fetch(PROCESS_PDF_URL, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': csrfToken
+                }
+            });
+            
+            if (!response.ok) {
+                let errorMessage = `Ошибка сервера: ${response.status}`;
+                try {
+                    const errorData = await response.json();
+                    if (errorData.message) {
+                        errorMessage = errorData.message;
+                    } else if (errorData.error === 'no_elements_detected') {
+                        throw new Error('NO_ELEMENTS_FOUND');
+                    }
+                } catch (e) {}
+                
+                throw new Error(errorMessage);
+            }
+            
+            // Обработка ответа
+            const data = await response.json();
+            
+            if (data.redirect_url) {
+                window.location.href = data.redirect_url;
+            } else {
+                fileUploadHandler.updateResults(data);
+            }
+            
+        } catch (error) {
+            console.error('Ошибка при обработке выделения:', error);
+            
+            if (error.message === 'NO_ELEMENTS_FOUND') {
+                showToast('На изображении не найдено текстовых элементов для распознавания', 'warning', 'Ничего не найдено');
+            } else if (error.message.includes('CONNECTION_ERROR') || error.message.includes('network')) {
+                showToast('Проблемы с соединением. Проверьте интернет и попробуйте снова', 'error', 'Ошибка сети');
+            } else {
+                showToast(`Ошибка: ${error.message}`, 'error', 'Ошибка обработки');
+            }
+            
+            fileUploadHandler.handleProcessError(error);
+        } finally {
+            fileUploadHandler.endProcessing();
+            document.body.style.cursor = '';
+        }
+    });
+} else {
+    console.warn('sendImageSelectionBtn not found');
+}
+
+// Добавляем закрытие модального окна при клике вне его
+window.addEventListener('click', function(event) {
+    if (event.target === pdfHandler.modal) {
+        pdfHandler.closeModalHandler();
+    }
+    if (event.target === imageHandler.modal) {
+        imageHandler.closeModalHandler();
+    }
+});
+
 // Временный скрипт для отладки отображения выделения
 function debugSelection() {
     // Создаем отладочный элемент

@@ -332,7 +332,7 @@ h1 {
 .qf-form {
     display: grid;
     gap: 25px; /* расстояние между элементами */
-    grid-template-columns: 100px 120px 110px 180px 200px 100px;
+    grid-template-columns: 100px 110px 120px 110px 180px 200px 100px;
     align-items: center;
     justify-items: center;
     justify-content: center;
@@ -386,7 +386,8 @@ h1 {
 .qf-form .small-input:nth-child(3),
 .qf-form .form-input:nth-child(4),
 .qf-form .large-input:nth-child(5),
-.qf-form .number-input:nth-child(6) {
+.qf-form .number-input:nth-child(6),
+.qf-form .number-input:nth-child(7) {
     grid-column: unset;
     min-width: unset;
     max-width: unset;
@@ -1114,5 +1115,91 @@ h1 {
     .btn-primary {
         width: 100%;
         text-align: center;
+    }
+}
+
+/* Стили для предупреждения о тестировании ИИ - приглушенный вариант */
+/* Стили для предупреждения о тестировании ИИ - без анимаций */
+.warning-text {
+    width: 100%;
+    max-width: 900px;
+    margin: 20px auto;
+    padding: 15px 25px;
+    background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+    border-left: 6px solid #ff6b35;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(255, 107, 53, 0.2);
+    text-align: center;
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.warning-text:hover {
+    transform: scale(1.02);
+    box-shadow: 0 6px 25px rgba(255, 107, 53, 0.3);
+}
+
+.warning-text p {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #2d3748;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+}
+
+/* Добавляем иконку предупреждения через псевдоэлемент */
+.warning-text p::before {
+    content: '⚠️';
+    font-size: 24px;
+}
+
+
+/* Убираем декоративную рамку-индикатор */
+.warning-text::before {
+    display: none;
+}
+
+/* Стиль для мобильных устройств */
+@media (max-width: 768px) {
+    .warning-text {
+        margin: 15px 10px;
+        padding: 12px 18px;
+        width: auto;
+    }
+    
+    .warning-text p {
+        font-size: 14px;
+        flex-wrap: wrap;
+    }
+    
+    .warning-text p::before {
+        font-size: 20px;
+    }
+    
+    .warning-text p::after {
+        font-size: 18px;
+    }
+}
+
+@media (max-width: 480px) {
+    .warning-text {
+        margin: 10px 5px;
+        padding: 10px 15px;
+        border-left-width: 4px;
+    }
+    
+    .warning-text p {
+        font-size: 13px;
+    }
+    
+    .warning-text p::before {
+        font-size: 18px;
+    }
+    
+    .warning-text p::after {
+        font-size: 16px;
     }
 }

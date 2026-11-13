@@ -71,13 +71,13 @@ export function syncComboboxes(sourceCombobox) {
 
 // Инициализация обработчиков событий
 export function initComboboxes() {
-    // Удаляем все существующие обработчики
+    // Удаление всех существующих обработчиков
     document.querySelectorAll('.combobox').forEach(combobox => {
         const newCombobox = combobox.cloneNode(true);
         combobox.parentNode.replaceChild(newCombobox, combobox);
     });
 
-    // Добавляем новые обработчики
+    // Новые обработчики
     document.querySelectorAll('.combobox').forEach(combobox => {
         combobox.addEventListener('change', function() {
             syncComboboxes(this);

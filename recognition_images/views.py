@@ -2,8 +2,8 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from . import forms, api_client, models
-from .utils import handle_uploaded_file, get_component_type, get_category_name, validate_result
-import tempfile, os, json, base64
+from .utils import handle_uploaded_file, get_category_name
+import os, json, base64
 from datetime import datetime
 from django.core.files.base import ContentFile
 from io import BytesIO
@@ -26,6 +26,81 @@ from collections import defaultdict
 
 logger = logging.getLogger(__name__)
 
+# recognition_images/views.py
+
+def history_redirect(request, result_id):
+    """Умное перенаправление из истории запросов"""
+    try:
+        # Находим результат
+        if request.user.is_authenticated:
+            detection_result = get_object_or_404(
+                models.DetectionResult, 
+                result_id=result_id,
+                user=request.user
+            )
+        else:
+            detection_result = get_object_or_404(
+                models.DetectionResult,
+                result_id=result_id,
+                session_key=request.session.session_key
+            )
+        
+        # Логика выбора страницы
+        if detection_result.results_viewed or detection_result.status == 'finalized':
+            # Если пользователь уже был на странице результатов - показываем финальный результат
+            request.session['last_result_id'] = result_id
+            request.session.modified = True
+            # Используем имя 'results' из твоего urls.py
+            return redirect('results')
+        else:
+            # Если пользователь не дошел до финальных результатов - отправляем на редактирование
+            request.session['edit_result_id'] = result_id
+            request.session.modified = True
+            messages.info(request, 'Результат еще не завершен. Пожалуйста, завершите редактирование.')
+            # Используем имя 'edit_results' из твоего urls.py
+            return redirect('edit_results')
+            
+    except models.DetectionResult.DoesNotExist:
+        messages.error(request, 'Результат не найден')
+        return redirect('dashboard')
+
+def edit_results_by_id(request, result_id):
+    """Прямой доступ к редактированию результата по ID"""
+    try:
+        # Находим результат
+        if request.user.is_authenticated:
+            detection_result = get_object_or_404(
+                models.DetectionResult, 
+                result_id=result_id,
+                user=request.user
+            )
+        else:
+            detection_result = get_object_or_404(
+                models.DetectionResult,
+                result_id=result_id,
+                session_key=request.session.session_key
+            )
+        
+        # Сохраняем ID в сессии для совместимости с существующей логикой
+        request.session['edit_result_id'] = result_id
+        request.session.modified = True
+        
+        # Если результат уже был завершен, меняем статус обратно на edited
+        if detection_result.results_viewed or detection_result.status == 'finalized':
+            detection_result.results_viewed = False
+            detection_result.status = 'edited'
+            detection_result.save()
+            messages.info(request, 'Результат открыт для редактирования. После внесения изменений не забудьте сохранить.')
+        else:
+            messages.info(request, 'Редактирование результата')
+        
+        return redirect('edit_results')
+        
+    except models.DetectionResult.DoesNotExist:
+        messages.error(request, 'Результат не найден')
+        return redirect('dashboard')
+    
+    
 def view_result_by_id(request, result_id):
     """Просмотр конкретного результата по ID"""
     try:
@@ -388,6 +463,7 @@ def upload_file(request):
 
 def edit_results_view(request):
     """Промежуточная страница редактирования"""
+    """Промежуточная страница редактирования"""
     result_id = request.session.get('edit_result_id')
     
     if not result_id:
@@ -403,6 +479,13 @@ def edit_results_view(request):
             filter_kwargs['session_key'] = get_or_create_session_key(request)
         
         detection_result = models.DetectionResult.objects.get(**filter_kwargs)
+        
+        # Если результат уже был завершен, обновляем статус для редактирования
+        if detection_result.status == 'finalized':
+            detection_result.status = 'edited'
+            detection_result.results_viewed = False  # Сбрасываем флаг, так как пользователь снова редактирует
+            detection_result.save()
+            messages.info(request, 'Результат снова открыт для редактирования')
         
         # ПРЕОБРАЗОВАНИЕ ДАННЫХ
         detected_data = []
@@ -508,6 +591,10 @@ def save_edited_results(request):
             
             detection_result.edited_data = edited_data
             detection_result.is_edited = True
+            
+            detection_result.status = 'edited'
+            detection_result.results_viewed = False
+            
             detection_result.save()
             
             # Сохраняем ID для страницы результатов
@@ -522,7 +609,6 @@ def save_edited_results(request):
             return JsonResponse({'success': False, 'error': str(e)}, status=500)
     
     return JsonResponse({'success': False, 'error': 'Invalid method'}, status=405)
-
 
 def process_edited_data(request):
     """AJAX обработка отредактированных данных и поиск в БД"""
@@ -696,13 +782,18 @@ def process_edited_data(request):
                         'total_quantity': 0
                     })
             
-            # Сохраняем в DetectionResult
+            # Сохранение в DetectionResult
             detection_result.edited_data = edited_elements
             detection_result.search_results = all_search_results
             detection_result.is_edited = True
+
+            # Обновление статуса - результат отредактирован, но еще не финализирован
+            detection_result.status = 'edited'
+            detection_result.results_viewed = False 
+            
             detection_result.save()
             
-            # Сохраняем найденные товары в Component
+            # Сохранение найденных товаров в Component
             _save_search_results_to_components(
                 session_key=request.session.session_key,
                 user=request.user if request.user.is_authenticated else None,
@@ -711,11 +802,11 @@ def process_edited_data(request):
                 image_base64=detection_result.image_base64
             )
             
-            # Сохраняем ID для страницы results
+            # Сохранение ID для страницы 
             request.session['last_result_id'] = result_id
             request.session.modified = True
             
-            # Если пользователь авторизован, показываем сообщение
+            
             if request.user.is_authenticated:
                 messages.success(request, 'Результаты успешно сохранены в ваш аккаунт')
             
@@ -746,7 +837,7 @@ def process_edited_data(request):
 def _save_search_results_to_components(session_key, user, result_id, search_results, image_base64):
     """Сохраняет результаты поиска в модель Component с сохранением группировки"""
     try:
-        # Удаляем старые компоненты
+    
         filter_kwargs = {'result_id': result_id}
         if user:
             filter_kwargs['user'] = user
@@ -763,6 +854,10 @@ def _save_search_results_to_components(session_key, user, result_id, search_resu
             search_results_list = result_group.get('search_results', [])
             group_index = result_group.get('group_index', 0)
             total_quantity = result_group.get('total_quantity', 1)
+            
+            # Получаем original_element для доступа к id_qf
+            original_element = result_group.get('original_element', {})
+            original_params = original_element.get('parameters', {}) if isinstance(original_element, dict) else {}
             
             # Преобразуем тип в формат Component
             component_type = _map_element_type_to_component_type(element_type)
@@ -803,6 +898,11 @@ def _save_search_results_to_components(session_key, user, result_id, search_resu
                             except:
                                 quantity = 1
                     
+                    # Получаем маркировку для автоматических выключателей
+                    marking = ''
+                    if element_type == 'QF':
+                        marking = original_params.get('id_qf', '')
+                    
                     component = models.Component(
                         user=user,
                         component_type=component_type,
@@ -813,7 +913,8 @@ def _save_search_results_to_components(session_key, user, result_id, search_resu
                         group_index=group_index,
                         session_key=session_key,
                         result_id=result_id,
-                        quantity=quantity
+                        quantity=quantity,
+                        marking=marking  # Добавляем маркировку
                     )
                     
                     # Сохраняем изображение для первого компонента
@@ -904,22 +1005,48 @@ def show_search_results(request):
 def results_view(request):
     """Передает данные на страницу results"""
     try:
-        result_id = request.session.get('last_result_id')
+        
+        result_id = request.GET.get('result_id')
+        
+        # Если нет в GET, пробуем из сессии
+        if not result_id:
+            result_id = request.session.get('last_result_id')
         
         if not result_id:
-            messages.error(request, 'Сессия истекла')
+            messages.error(request, 'Результат не найден')
             return redirect('upload')
         
-        # Получаем ключ сессии
+        # Сохранение ID в сессии для дальнейшего использования
+        request.session['last_result_id'] = result_id
+        request.session.modified = True
+        
+        # Получение ключа сессии
         session_key = get_or_create_session_key(request)
         
-        # Поиск компонентов
+        # Получение результата и отметка, что пользователь его просмотрел
         filter_kwargs = {'result_id': result_id}
         if request.user.is_authenticated:
             filter_kwargs['user'] = request.user
         else:
             filter_kwargs['session_key'] = session_key
         
+        try:
+            detection_result = models.DetectionResult.objects.get(**filter_kwargs)
+            
+            if detection_result.status == 'edited':
+                detection_result.results_viewed = True
+                detection_result.status = 'finalized'
+                detection_result.save()
+            elif not detection_result.results_viewed and detection_result.status != 'edited':
+                detection_result.results_viewed = True
+                detection_result.status = 'finalized'
+                detection_result.save()
+                
+        except models.DetectionResult.DoesNotExist:
+            # Если результат не найден, но компоненты есть - продолжаем
+            pass
+        
+        # Поиск компонентов
         component_with_image = models.Component.objects.filter(
             **filter_kwargs
         ).exclude(image__isnull=True).first()
@@ -950,7 +1077,8 @@ def results_view(request):
                 'id': str(comp.article).strip(),
                 'name': str(comp.name).strip(),
                 'price': float(comp.price),
-                'quantity': int(comp.quantity)
+                'quantity': int(comp.quantity),
+                'marking': comp.marking if comp.component_type == 'automatic' else ''  # Добавляем маркировку
             }
             
             if comp.component_type == 'automatic':
@@ -964,7 +1092,7 @@ def results_view(request):
                     seen_counters.add(comp.article)
                     cleaned_data['counter'].append(item)
         
-        # Подготовка данных для categories
+        # Подготовка данных для categories с маркировкой
         categories_data = {}
         
         for comp in components:
@@ -980,7 +1108,8 @@ def results_view(request):
                 'name': comp.name,
                 'price': float(comp.price),
                 'group_index': comp.group_index,
-                'quantity': comp.quantity
+                'quantity': comp.quantity,
+                'marking': comp.marking if comp.component_type == 'automatic' else ''  # Добавляем маркировку
             }
             
             categories_data[comp.component_type]['groups'][comp.group_index].append(item_data)
@@ -997,6 +1126,7 @@ def results_view(request):
                     manager.add_item_group(items)
                     prepared_group = manager.prepare_for_template()
                     prepared_group['total_quantity'] = total_quantity
+                    prepared_group['marking'] = items[0].get('marking', '') if items else ''  # Добавляем маркировку для группы
                     category_groups.append(prepared_group)
             else:
                 if category['groups']:
@@ -1016,6 +1146,7 @@ def results_view(request):
                             prepared_group = manager.prepare_for_template()
                             prepared_group['actual_quantity'] = first_item_quantity
                             prepared_group['group_count'] = len(category['groups'])
+                            prepared_group['marking'] = items[0].get('marking', '') if items else ''  # Добавляем маркировку
                             category_groups.append(prepared_group)
             
             final_categories.append({
@@ -1111,7 +1242,7 @@ def delete_result(request, result_id):
             user=request.user,
             result_id=result_id
         )
-        # Удаляем связанные компоненты
+        
         models.Component.objects.filter(
             user=request.user,
             result_id=result_id

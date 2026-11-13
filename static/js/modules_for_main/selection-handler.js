@@ -3,9 +3,9 @@ import { cropCanvasWithQuality } from './processing-image.js';
 export class SelectionHandler {
     constructor(selectionContainer) {
         this.selectionContainer = selectionContainer; // Контейнер с canvas
-        this.pdfPreview = selectionContainer.parentElement; // Родительский контейнер
+        this.parentContainer = selectionContainer.parentElement; // Родительский контейнер (pdfPreview или imagePreview)
         
-        // Находим canvas внутри контейнера
+        // Поиск canvas внутри контейнера
         this.canvas = selectionContainer.querySelector('canvas');
         this.ctx = this.canvas ? this.canvas.getContext('2d') : null;
 
@@ -32,31 +32,39 @@ export class SelectionHandler {
             scale: 1
         };
         
+        // Сохранение смещение canvas при инициализации
+        this.canvasOffset = { x: 0, y: 0 };
+        
         this.init();
     }
     
     init() {
-    this.createOverlay();
-    this.setupEventListeners();
-    this.updateCanvasContext();
-    
-    // Отладка
-    // setTimeout(() => {
-    //     this.debugHandles();
-    // }, 100);
-}
+        this.createOverlay();
+        this.setupEventListeners();
+        this.updateCanvasContext();
+        this.updateCanvasOffset();
+    }
 
+    updateCanvasOffset() {
+        if (this.canvas && this.selectionContainer) {
+            const canvasRect = this.canvas.getBoundingClientRect();
+            const containerRect = this.selectionContainer.getBoundingClientRect();
+            
+            this.canvasOffset.x = canvasRect.left - containerRect.left;
+            this.canvasOffset.y = canvasRect.top - containerRect.top;
+        }
+    }
 
     createOverlay() {
-        // Удаляем существующий overlay если есть
+        // Удаление существующего overlay если есть
         const existingOverlays = document.querySelectorAll('.selection-overlay');
         existingOverlays.forEach(overlay => overlay.remove());
         
-        // Также удаляем старые элементы выделения
+        // Удаление старых элементов выделения
         const oldElements = this.selectionContainer.querySelectorAll('.selection-rect, .selection-handles, .selection-dimensions');
         oldElements.forEach(el => el.remove());
         
-        // Создаем новый overlay ВНУТРИ selectionContainer
+        // Создание нового overlay ВНУТРИ selectionContainer
         this.overlay = document.createElement('div');
         this.overlay.className = 'selection-overlay';
         this.overlay.style.cssText = `
@@ -71,7 +79,7 @@ export class SelectionHandler {
             z-index: 1000;
         `;
         
-        // Создаем прямоугольник выделения
+        // Создание прямоугольника выделения
         this.selectionRect = document.createElement('div');
         this.selectionRect.className = 'selection-rect';
         this.selectionRect.style.cssText = `
@@ -102,7 +110,7 @@ export class SelectionHandler {
             white-space: nowrap;
         `;
         
-        // Ручки - СОЗДАЕМ КОНТЕЙНЕР ДЛЯ РУЧЕК ВНУТРИ selectionRect
+        // Ручки
         this.handles = document.createElement('div');
         this.handles.className = 'selection-handles';
         this.handles.style.cssText = `
@@ -116,9 +124,8 @@ export class SelectionHandler {
             z-index: 1003;
         `;
         
-        // СОЗДАЕМ ТОЛЬКО УГЛОВЫЕ РУЧКИ
+        // Угловые ручки
         const handleConfigs = [
-            // Угловые ручки
             { class: 'handle-nw', cursor: 'nw-resize', top: '-8px', left: '-8px' },
             { class: 'handle-ne', cursor: 'ne-resize', top: '-8px', right: '-8px' },
             { class: 'handle-sw', cursor: 'sw-resize', bottom: '-8px', left: '-8px' },
@@ -145,7 +152,6 @@ export class SelectionHandler {
                 transition: transform 0.1s, background-color 0.1s;
             `;
             
-            // Эффекты при наведении
             handle.addEventListener('mouseenter', () => {
                 handle.style.transform = 'scale(1.3)';
                 handle.style.backgroundColor = '#2A7179';
@@ -159,70 +165,65 @@ export class SelectionHandler {
             this.handles.appendChild(handle);
         });
         
-        // ВАЖНО: добавляем handles и dimensionsLabel ВНУТРЬ selectionRect
         this.selectionRect.appendChild(this.handles);
         this.selectionRect.appendChild(this.dimensionsLabel);
         
-        // Добавляем элементы в overlay
         this.overlay.appendChild(this.selectionRect);
         this.selectionContainer.appendChild(this.overlay);
     }
     
     setupEventListeners() {
-    // Начало выделения на самом overlay
-    this.overlay.addEventListener('mousedown', (e) => {
-        // Проверяем, что кликнули именно на overlay, а не на другие элементы
-        if (e.target === this.overlay) {
-            this.startSelection(e);
-        }
-    });
-    
-    // Изменение размера через ручки
-    this.handles.addEventListener('mousedown', (e) => {
-        const handle = e.target.closest('.handle');
-        if (handle) {
-            e.stopPropagation();
-            e.preventDefault();
-            
-            // Извлекаем только имя класса ручки (handle-se, handle-nw и т.д.)
-            const classNames = handle.className.split(' ');
-            const handleName = classNames.find(name => name.startsWith('handle-'));
-            
-            console.log('Handle clicked:', {
-                fullClassName: handle.className,
-                extractedHandleName: handleName
-            });
-            
-            if (handleName) {
-                this.startResize(e, handleName);
+        this.overlay.addEventListener('mousedown', (e) => {
+            if (e.target === this.overlay) {
+                this.startSelection(e);
             }
-        }
-    }, true);
+        });
+        
+        this.handles.addEventListener('mousedown', (e) => {
+            const handle = e.target.closest('.handle');
+            if (handle) {
+                e.stopPropagation();
+                e.preventDefault();
+                
+                const classNames = handle.className.split(' ');
+                const handleName = classNames.find(name => name.startsWith('handle-'));
+                
+                if (handleName) {
+                    this.startResize(e, handleName);
+                }
+            }
+        }, true);
+        
+        this.selectionRect.addEventListener('mousedown', (e) => {
+            if (!e.target.closest('.handle')) {
+                e.stopPropagation();
+                e.preventDefault();
+                this.startDrag(e);
+            }
+        }, true);
+        
+        document.addEventListener('mousemove', this.handleMouseMove.bind(this));
+        document.addEventListener('mouseup', this.handleMouseUp.bind(this));
+        
+        // Обновление смещения при изменении размера окна
+        window.addEventListener('resize', () => this.updateCanvasOffset());
+    }
     
-    // Перемещение выделенной области
-    this.selectionRect.addEventListener('mousedown', (e) => {
-        // Проверяем, что кликнули не на handle
-        if (!e.target.closest('.handle')) {
-            e.stopPropagation();
-            e.preventDefault();
-            this.startDrag(e);
-        }
-    }, true);
-    
-    // Глобальные события мыши
-    document.addEventListener('mousemove', this.handleMouseMove.bind(this));
-    document.addEventListener('mouseup', this.handleMouseUp.bind(this));
-}
-    
-   startSelection(e) {
+    startSelection(e) {
         e.preventDefault();
         e.stopPropagation();
         
-        const rect = this.selectionContainer.getBoundingClientRect();
+        this.updateCanvasOffset();
         
-        // Координаты относительно selectionContainer
-        this.startX = e.clientX - rect.left;
-        this.startY = e.clientY - rect.top;
+        const canvasRect = this.canvas.getBoundingClientRect();
+        
+        // Координаты мыши относительно canvas
+        const mouseX = e.clientX - canvasRect.left;
+        const mouseY = e.clientY - canvasRect.top;
+        
+        // Ограничение координат границами canvas
+        this.startX = Math.max(0, Math.min(mouseX, canvasRect.width));
+        this.startY = Math.max(0, Math.min(mouseY, canvasRect.height));
         
         this.selection.x = this.startX;
         this.selection.y = this.startY;
@@ -231,87 +232,85 @@ export class SelectionHandler {
         
         this.isSelecting = true;
         
-        console.log('Start selection:', {
-            startX: this.startX,
-            startY: this.startY,
-            selection: { ...this.selection }
-        });
-        
-        // Показываем прямоугольник
         if (this.selectionRect) {
             this.selectionRect.style.display = 'block';
             this.selectionRect.classList.add('creating');
         }
         
-        // Обновляем UI кнопок при начале выделения
-        const toggleBtn = document.getElementById('toggleSelection');
-        const convertBtn = document.getElementById('convertSelection');
-        if (toggleBtn) {
-            toggleBtn.innerHTML = '<i class="select-icon">✕</i> Отменить выделение';
-            toggleBtn.classList.add('active');
-        }
-        if (convertBtn) {
-            convertBtn.style.display = 'none';
-        }
+        this.updateButtons('start');
         
         this.updateSelectionRect();
     }
 
-    updateCanvasContext() {
-    // Убедимся, что selectionContainer существует
-    if (!this.selectionContainer) {
-        console.warn('selectionContainer не найден');
-        return;
-    }
-    
-    // Находим canvas внутри selectionContainer
-    this.canvas = this.selectionContainer.querySelector('canvas');
-    
-    if (this.canvas) {
-        console.log('Canvas найден:', {
-            width: this.canvas.width,
-            height: this.canvas.height,
-            clientWidth: this.canvas.clientWidth,
-            clientHeight: this.canvas.clientHeight
-        });
+    updateButtons(action) {
+        const pdfModal = document.getElementById('pdfModal');
+        const imageModal = document.getElementById('imageModal');
         
-        this.ctx = this.canvas.getContext('2d');
-        
-        // Рассчитываем scale для преобразования координат
-        const canvasRect = this.canvas.getBoundingClientRect();
-        
-        if (canvasRect.width > 0 && canvasRect.height > 0) {
-            this.selection.scale = this.canvas.width / canvasRect.width;
-            console.log('Масштаб вычислен:', this.selection.scale);
-        } else {
-            console.warn('Canvas имеет нулевые размеры');
-            this.selection.scale = 1;
+        if (imageModal && imageModal.style.display === 'block') {
+            const toggleBtn = document.getElementById('imageToggleSelection');
+            const convertBtn = document.getElementById('sendImageSelection');
+            if (toggleBtn && action === 'start') {
+                toggleBtn.innerHTML = '<i class="select-icon">✕</i> Отменить выделение';
+                toggleBtn.classList.add('active');
+            }
+            if (convertBtn) {
+                convertBtn.style.display = 'none';
+            }
+        } else if (pdfModal && pdfModal.style.display === 'block') {
+            const toggleBtn = document.getElementById('toggleSelection');
+            const convertBtn = document.getElementById('convertSelection');
+            if (toggleBtn && action === 'start') {
+                toggleBtn.innerHTML = '<i class="select-icon">✕</i> Отменить выделение';
+                toggleBtn.classList.add('active');
+            }
+            if (convertBtn) {
+                convertBtn.style.display = 'none';
+            }
         }
-    } else {
-        console.warn('Canvas не найден в selectionContainer');
-        this.canvas = null;
-        this.ctx = null;
     }
-}
+
+    updateCanvasContext() {
+        if (!this.selectionContainer) {
+            console.warn('selectionContainer не найден');
+            return;
+        }
+        
+        this.canvas = this.selectionContainer.querySelector('canvas');
+        
+        if (this.canvas) {
+            this.ctx = this.canvas.getContext('2d');
+            
+            const canvasRect = this.canvas.getBoundingClientRect();
+            
+            if (canvasRect.width > 0 && canvasRect.height > 0) {
+                this.selection.scale = this.canvas.width / canvasRect.width;
+            } else {
+                this.selection.scale = 1;
+            }
+        } else {
+            console.warn('Canvas не найден в selectionContainer');
+            this.canvas = null;
+            this.ctx = null;
+        }
+    }
     
     startResize(e, handleClass) {
         e.preventDefault();
         e.stopPropagation();
         
-        console.log('Start resize called for handle:', handleClass);
-        
+        this.updateCanvasOffset();
         this.isResizing = true;
         this.resizeHandle = handleClass;
         
-        // Получаем координаты относительно selectionContainer
-        const rect = this.selectionContainer.getBoundingClientRect();
-        const scrollLeft = this.selectionContainer.scrollLeft || 0;
-        const scrollTop = this.selectionContainer.scrollTop || 0;
+        const canvasRect = this.canvas.getBoundingClientRect();
         
-        this.startX = e.clientX - rect.left + scrollLeft;
-        this.startY = e.clientY - rect.top + scrollTop;
+        this.startX = e.clientX - canvasRect.left;
+        this.startY = e.clientY - canvasRect.top;
         
-        // Сохраняем исходные размеры
+
+        this.startX = Math.max(0, Math.min(this.startX, canvasRect.width));
+        this.startY = Math.max(0, Math.min(this.startY, canvasRect.height));
+        
         this.originalSelection = { 
             x: this.selection.x,
             y: this.selection.y,
@@ -319,15 +318,6 @@ export class SelectionHandler {
             height: this.selection.height
         };
         
-        console.log('Start resize details:', {
-            handle: handleClass,
-            startX: this.startX,
-            startY: this.startY,
-            original: this.originalSelection,
-            containerRect: rect
-        });
-        
-        // Останавливаем дальнейшую обработку событий
         return false;
     }
     
@@ -335,13 +325,19 @@ export class SelectionHandler {
         e.preventDefault();
         e.stopPropagation();
         
+        this.updateCanvasOffset();
         this.isDragging = true;
         
-        const rect = this.pdfPreview.getBoundingClientRect();
-        this.dragStartX = e.clientX - rect.left;
-        this.dragStartY = e.clientY - rect.top;
+        // Получение координат мыши относительно canvas
+        const canvasRect = this.canvas.getBoundingClientRect();
         
-        // Сохраняем исходную позицию
+        this.dragStartX = e.clientX - canvasRect.left;
+        this.dragStartY = e.clientY - canvasRect.top;
+        
+        this.dragStartX = Math.max(0, Math.min(this.dragStartX, canvasRect.width));
+        this.dragStartY = Math.max(0, Math.min(this.dragStartY, canvasRect.height));
+        
+        // Сохранение исходной позиции
         this.dragOriginalX = this.selection.x;
         this.dragOriginalY = this.selection.y;
     }
@@ -352,22 +348,14 @@ export class SelectionHandler {
         e.preventDefault();
         e.stopPropagation();
         
-        // Получаем координаты относительно selectionContainer
-        const rect = this.selectionContainer.getBoundingClientRect();
-        const scrollLeft = this.selectionContainer.scrollLeft || 0;
-        const scrollTop = this.selectionContainer.scrollTop || 0;
+        // Получение координат мыши относительно canvas
+        const canvasRect = this.canvas.getBoundingClientRect();
         
-        this.currentX = Math.max(0, Math.min(e.clientX - rect.left + scrollLeft, rect.width));
-        this.currentY = Math.max(0, Math.min(e.clientY - rect.top + scrollTop, rect.height));
+        this.currentX = e.clientX - canvasRect.left;
+        this.currentY = e.clientY - canvasRect.top;
         
-        console.log('Mouse move:', {
-            x: this.currentX,
-            y: this.currentY,
-            rect: rect,
-            isSelecting: this.isSelecting,
-            isResizing: this.isResizing,
-            isDragging: this.isDragging
-        });
+        this.currentX = Math.max(0, Math.min(this.currentX, canvasRect.width));
+        this.currentY = Math.max(0, Math.min(this.currentY, canvasRect.height));
         
         if (this.isSelecting) {
             this.updateSelectionSize();
@@ -378,22 +366,10 @@ export class SelectionHandler {
         }
         
         this.updateSelectionRect();
-
-        // if (this.isResizing || this.isDragging) {
-        // this.logSelectionState();
-
     }
 
     handleMouseUp(e) {
-        console.log('Mouse up event:', {
-            isSelecting: this.isSelecting,
-            isResizing: this.isResizing,
-            isDragging: this.isDragging,
-            selection: { ...this.selection }
-        });
-        
         if (this.isSelecting || this.isResizing || this.isDragging) {
-            // Сохраняем текущее состояние перед сбросом флагов
             const wasResizing = this.isResizing;
             const wasDragging = this.isDragging;
             
@@ -401,24 +377,17 @@ export class SelectionHandler {
             this.isResizing = false;
             this.isDragging = false;
             
-            // Убираем анимацию создания
             if (this.selectionRect) {
                 this.selectionRect.classList.remove('creating');
             }
             
-            // Если было изменение размера или перемещение, обновляем
             if (wasResizing || wasDragging) {
-                console.log('Was resizing or dragging, updating...');
                 this.updateSelectionRect();
             }
             
-            // Валидация выделения
             const isValid = this.validateSelection();
             
             if (isValid) {
-                console.log('Selection is valid, showing handles');
-                
-                // Показываем ручки и метку размеров
                 if (this.handles) {
                     this.handles.style.display = 'block';
                     this.handles.style.pointerEvents = 'auto';
@@ -429,34 +398,54 @@ export class SelectionHandler {
                     this.updateDimensionsLabel();
                 }
                 
-                // Автоматическое появление кнопки "Отправить выделенное"
-                const convertBtn = document.getElementById('convertSelection');
-                if (convertBtn) {
-                    convertBtn.style.display = 'block';
-                    convertBtn.disabled = false;
-                    
-                    // Плавное появление
-                    setTimeout(() => {
-                        convertBtn.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
-                        convertBtn.style.opacity = '1';
-                        convertBtn.style.transform = 'translateY(0)';
-                    }, 10);
-                }
-                
-                // Также показываем кнопку "Сбросить выделение"
-                const resetBtn = document.getElementById('resetSelection');
-                if (resetBtn) {
-                    resetBtn.style.display = 'inline-block';
-                }
-                
+                this.showActionButtons();
             } else {
-                console.log('Selection is not valid, clearing');
                 this.clearSelection();
             }
             
-            // Сбрасываем handle
             this.resizeHandle = null;
             this.originalSelection = null;
+        }
+    }
+
+    showActionButtons() {
+        const pdfModal = document.getElementById('pdfModal');
+        const imageModal = document.getElementById('imageModal');
+        
+        if (imageModal && imageModal.style.display === 'block') {
+            const imageConvertBtn = document.getElementById('sendImageSelection');
+            if (imageConvertBtn) {
+                imageConvertBtn.style.display = 'block';
+                imageConvertBtn.disabled = false;
+                
+                setTimeout(() => {
+                    imageConvertBtn.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+                    imageConvertBtn.style.opacity = '1';
+                    imageConvertBtn.style.transform = 'translateY(0)';
+                }, 10);
+            }
+            
+            const imageResetBtn = document.getElementById('imageResetSelection');
+            if (imageResetBtn) {
+                imageResetBtn.style.display = 'inline-block';
+            }
+        } else if (pdfModal && pdfModal.style.display === 'block') {
+            const convertBtn = document.getElementById('convertSelection');
+            if (convertBtn) {
+                convertBtn.style.display = 'block';
+                convertBtn.disabled = false;
+                
+                setTimeout(() => {
+                    convertBtn.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+                    convertBtn.style.opacity = '1';
+                    convertBtn.style.transform = 'translateY(0)';
+                }, 10);
+            }
+            
+            const resetBtn = document.getElementById('resetSelection');
+            if (resetBtn) {
+                resetBtn.style.display = 'inline-block';
+            }
         }
     }
         
@@ -464,9 +453,7 @@ export class SelectionHandler {
         this.selection.width = this.currentX - this.startX;
         this.selection.height = this.currentY - this.startY;
         
-        // Ограничиваем выделение границами контейнера
-        const maxX = this.selectionContainer.clientWidth;
-        const maxY = this.selectionContainer.clientHeight;
+        const canvasRect = this.canvas.getBoundingClientRect();
         
         if (this.selection.width < 0) {
             this.selection.x = this.currentX;
@@ -482,26 +469,16 @@ export class SelectionHandler {
             this.selection.y = this.startY;
         }
         
-        // Ограничиваем границы
-        this.selection.x = Math.max(0, Math.min(this.selection.x, maxX - 10));
-        this.selection.y = Math.max(0, Math.min(this.selection.y, maxY - 10));
-        this.selection.width = Math.min(this.selection.width, maxX - this.selection.x);
-        this.selection.height = Math.min(this.selection.height, maxY - this.selection.y);
+        this.selection.x = Math.max(0, Math.min(this.selection.x, canvasRect.width - 10));
+        this.selection.y = Math.max(0, Math.min(this.selection.y, canvasRect.height - 10));
+        this.selection.width = Math.min(this.selection.width, canvasRect.width - this.selection.x);
+        this.selection.height = Math.min(this.selection.height, canvasRect.height - this.selection.y);
     }
     
     updateResize() {
         const dx = this.currentX - this.startX;
         const dy = this.currentY - this.startY;
         
-        console.log('Updating resize:', {
-            handle: this.resizeHandle,
-            dx: dx,
-            dy: dy,
-            original: this.originalSelection,
-            currentMouse: { x: this.currentX, y: this.currentY }
-        });
-        
-        // Сохраняем исходные размеры для расчетов
         const original = {
             x: this.originalSelection.x,
             y: this.originalSelection.y,
@@ -509,15 +486,12 @@ export class SelectionHandler {
             height: this.originalSelection.height
         };
         
-        // ВРЕМЕННЫЕ ПЕРЕМЕННЫЕ для расчетов
         let newX = original.x;
         let newY = original.y;
         let newWidth = original.width;
         let newHeight = original.height;
         
-        // Применяем изменения в зависимости от типа ручки
         switch (this.resizeHandle) {
-            // ЛЕВЫЙ ВЕРХНИЙ угол
             case 'handle-nw':
                 newX = original.x + dx;
                 newY = original.y + dy;
@@ -525,75 +499,54 @@ export class SelectionHandler {
                 newHeight = original.height - dy;
                 break;
                 
-            // ПРАВЫЙ ВЕРХНИЙ угол
             case 'handle-ne':
                 newY = original.y + dy;
                 newWidth = original.width + dx;
                 newHeight = original.height - dy;
                 break;
                 
-            // ЛЕВЫЙ НИЖНИЙ угол
             case 'handle-sw':
                 newX = original.x + dx;
                 newWidth = original.width - dx;
                 newHeight = original.height + dy;
                 break;
                 
-            // ПРАВЫЙ НИЖНИЙ угол
             case 'handle-se':
                 newWidth = original.width + dx;
                 newHeight = original.height + dy;
                 break;
-                
-            default:
-                console.warn('Unknown resize handle:', this.resizeHandle);
-                return;
         }
         
-        // Проверяем, чтобы ширина и высота были положительными
         if (newWidth < 0) {
             if (this.resizeHandle.includes('w')) {
-                newX += newWidth; // Сдвигаем x на отрицательную ширину
+                newX += newWidth;
             }
             newWidth = Math.abs(newWidth);
         }
         
         if (newHeight < 0) {
             if (this.resizeHandle.includes('n')) {
-                newY += newHeight; // Сдвигаем y на отрицательную высоту
+                newY += newHeight;
             }
             newHeight = Math.abs(newHeight);
         }
         
-        // Ограничиваем минимальный размер
         const minSize = 20;
+        const canvasRect = this.canvas.getBoundingClientRect();
+        
         newWidth = Math.max(minSize, newWidth);
         newHeight = Math.max(minSize, newHeight);
         
-        // Ограничиваем границы контейнера
-        const containerWidth = this.selectionContainer.clientWidth;
-        const containerHeight = this.selectionContainer.clientHeight;
+        newX = Math.max(0, Math.min(newX, canvasRect.width - minSize));
+        newY = Math.max(0, Math.min(newY, canvasRect.height - minSize));
+        newWidth = Math.min(newWidth, canvasRect.width - newX);
+        newHeight = Math.min(newHeight, canvasRect.height - newY);
         
-        // Не выходим за границы
-        newX = Math.max(0, Math.min(newX, containerWidth - minSize));
-        newY = Math.max(0, Math.min(newY, containerHeight - minSize));
-        newWidth = Math.min(newWidth, containerWidth - newX);
-        newHeight = Math.min(newHeight, containerHeight - newY);
-        
-        // ПРИМЕНЯЕМ ИЗМЕНЕНИЯ К ОСНОВНОМУ selection
         this.selection.x = newX;
         this.selection.y = newY;
         this.selection.width = newWidth;
         this.selection.height = newHeight;
         
-        console.log('Resize applied:', {
-            x: this.selection.x,
-            y: this.selection.y,
-            width: this.selection.width,
-            height: this.selection.height
-        });
-        
-        // Обновляем визуальное отображение
         this.updateSelectionRect();
     }
     
@@ -604,76 +557,57 @@ export class SelectionHandler {
         this.selection.x = this.dragOriginalX + dx;
         this.selection.y = this.dragOriginalY + dy;
         
-        // Ограничиваем перемещение границами контейнера
-        const maxX = this.pdfPreview.clientWidth - this.selection.width;
-        const maxY = this.pdfPreview.clientHeight - this.selection.height;
+        const canvasRect = this.canvas.getBoundingClientRect();
+        
+        const maxX = canvasRect.width - this.selection.width;
+        const maxY = canvasRect.height - this.selection.height;
         
         this.selection.x = Math.max(0, Math.min(this.selection.x, maxX));
         this.selection.y = Math.max(0, Math.min(this.selection.y, maxY));
     }
     
     updateSelectionRect() {
-        if (!this.selectionRect) {
-            console.warn('selectionRect is null');
-            return;
+    if (!this.selectionRect) return;
+    
+    // Актуальное смещение canvas
+    this.updateCanvasOffset();
+    
+    // Построение прямоугольника с учетом смещения canvas
+    this.selectionRect.style.left = `${this.canvasOffset.x + this.selection.x}px`;
+    this.selectionRect.style.top = `${this.canvasOffset.y + this.selection.y}px`;
+    this.selectionRect.style.width = `${this.selection.width}px`;
+    this.selectionRect.style.height = `${this.selection.height}px`;
+    
+    if (this.selection.width > 0 && this.selection.height > 0) {
+        this.selectionRect.style.display = 'block';
+        this.overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.3)';
+        this.selectionRect.style.backgroundColor = 'rgba(255, 255, 255, 0.8)';
+        this.selectionRect.style.boxShadow = 'inset 0 0 0 1px #2A7179';
+        
+        this.updateDimensionsLabel();
+        
+        if (!this.isSelecting && !this.isResizing && this.handles) {
+            this.handles.style.display = 'block';
+            this.handles.style.pointerEvents = 'auto';
         }
-        
-        // Обновляем позицию и размер прямоугольника
-        this.selectionRect.style.left = `${this.selection.x}px`;
-        this.selectionRect.style.top = `${this.selection.y}px`;
-        this.selectionRect.style.width = `${this.selection.width}px`;
-        this.selectionRect.style.height = `${this.selection.height}px`;
-        
-        console.log('Updating selection rect:', {
-            x: this.selection.x,
-            y: this.selection.y,
-            width: this.selection.width,
-            height: this.selection.height,
-            styleLeft: this.selectionRect.style.left,
-            styleTop: this.selectionRect.style.top
-        });
-        
-        // Показываем прямоугольник, если есть размер
-        if (this.selection.width > 0 && this.selection.height > 0) {
-            this.selectionRect.style.display = 'block';
-            
-            // Затемнение ВНЕ выделенной области
-            this.overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.3)';
-            this.selectionRect.style.backgroundColor = 'rgba(255, 255, 255, 0.8)';
-            this.selectionRect.style.boxShadow = 'inset 0 0 0 1px #2A7179';
-            
-            // Обновляем метку размеров
-            this.updateDimensionsLabel();
-            
-            // ПОКАЗЫВАЕМ РУЧКИ ТОЛЬКО ЕСЛИ ВЫДЕЛЕНИЕ ЗАВЕРШЕНО И НЕ В ПРОЦЕССЕ
-            if (!this.isSelecting && !this.isResizing && this.handles) {
-                this.handles.style.display = 'block';
-                this.handles.style.pointerEvents = 'auto';
-            }
-        } else {
-            this.selectionRect.style.display = 'none';
-            if (this.handles) {
-                this.handles.style.display = 'none';
-            }
+    } else {
+        this.selectionRect.style.display = 'none';
+        if (this.handles) {
+            this.handles.style.display = 'none';
         }
-        
-        // Принудительное обновление layout
-        this.selectionRect.offsetHeight;
     }
-
-
+    
+    this.selectionRect.offsetHeight;
+}
     updateDimensionsLabel() {
         if (!this.dimensionsLabel) return;
         
-        // Рассчитываем размеры в пикселях
         const widthPx = Math.round(this.selection.width);
         const heightPx = Math.round(this.selection.height);
         
-        // Если есть canvas, можем рассчитать примерные размеры в мм
         let dimensionsText = `${widthPx} × ${heightPx} px`;
         
         if (this.canvas && this.selection.scale) {
-            // Примерный перевод пикселей в миллиметры (96 dpi = 3.78 px/mm)
             const widthMm = Math.round((widthPx / this.selection.scale) / 3.78);
             const heightMm = Math.round((heightPx / this.selection.scale) / 3.78);
             dimensionsText += ` ≈ ${widthMm} × ${heightMm} мм`;
@@ -681,23 +615,19 @@ export class SelectionHandler {
         
         this.dimensionsLabel.textContent = dimensionsText;
         
-        // Позиционируем метку
+        // Позиционируем метку относительно выделения
         this.dimensionsLabel.style.left = '50%';
         this.dimensionsLabel.style.transform = 'translateX(-50%)';
         this.dimensionsLabel.style.bottom = '-30px';
         
-        // Если метка выходит за нижнюю границу, показываем её сверху
-        const rectBottom = this.selection.y + this.selection.height;
-        const containerHeight = this.pdfPreview.clientHeight;
-        
-        if (rectBottom + 40 > containerHeight) {
+        // Если метка выходит за нижнюю границу canvas, показываем сверху
+        if (this.selection.y + this.selection.height + 40 > this.canvas.getBoundingClientRect().height) {
             this.dimensionsLabel.style.bottom = 'auto';
             this.dimensionsLabel.style.top = '-30px';
         }
     }
     
     validateSelection() {
-        // Минимальный размер выделения
         if (this.selection.width < 10 || this.selection.height < 10) {
             this.clearSelection();
             return false;
@@ -706,6 +636,8 @@ export class SelectionHandler {
     }
     
     show() {
+        this.updateCanvasOffset();
+        
         if (this.overlay) {
             this.overlay.style.display = 'block';
             this.overlay.style.cursor = 'crosshair';
@@ -713,11 +645,7 @@ export class SelectionHandler {
         }
         
         this.isActive = true;
-        
-        // Добавляем обработчики
         this.bindEventListeners();
-        
-        // Обновляем контекст canvas
         this.updateCanvasContext();
     }
 
@@ -740,11 +668,8 @@ export class SelectionHandler {
         }
         
         this.isActive = false;
-        
-        // Убираем обработчики
         this.unbindEventListeners();
         
-        // Сбрасываем выделение
         this.selection = {
             x: 0,
             y: 0,
@@ -753,21 +678,26 @@ export class SelectionHandler {
             scale: this.selection.scale || 1
         };
         
-        // Скрываем кнопку отправки выделения
-        const convertBtn = document.getElementById('convertSelection');
-        if (convertBtn) {
-            convertBtn.style.display = 'none';
+        // Скрываем кнопки
+        this.hideActionButtons();
+    }
+
+    hideActionButtons() {
+        const pdfModal = document.getElementById('pdfModal');
+        const imageModal = document.getElementById('imageModal');
+        
+        if (imageModal && imageModal.style.display === 'block') {
+            const convertBtn = document.getElementById('sendImageSelection');
+            if (convertBtn) convertBtn.style.display = 'none';
+        } else if (pdfModal && pdfModal.style.display === 'block') {
+            const convertBtn = document.getElementById('convertSelection');
+            if (convertBtn) convertBtn.style.display = 'none';
         }
     }
     
-    
-
-      // Новый метод для привязки обработчиков событий
     bindEventListeners() {
-        // Обработчики для начала действий
-        this.pdfPreview.addEventListener('mousedown', this.handleMouseDown.bind(this));
+        this.parentContainer.addEventListener('mousedown', this.handleMouseDown.bind(this));
         
-        // Обработчики для ручек
         this.handles.querySelectorAll('.handle').forEach(handle => {
             handle.addEventListener('mousedown', (e) => {
                 e.stopPropagation();
@@ -775,39 +705,30 @@ export class SelectionHandler {
             });
         });
         
-        // Обработчик для перемещения выделения
         this.selectionRect.addEventListener('mousedown', (e) => {
             e.stopPropagation();
             this.startDrag(e);
         });
         
-        // Глобальные события
         document.addEventListener('mousemove', this.handleMouseMove.bind(this));
         document.addEventListener('mouseup', this.handleMouseUp.bind(this));
     }
     
-    // Новый метод для отвязки обработчиков событий
     unbindEventListeners() {
-        this.pdfPreview.removeEventListener('mousedown', this.handleMouseDown);
+        this.parentContainer.removeEventListener('mousedown', this.handleMouseDown);
         document.removeEventListener('mousemove', this.handleMouseMove);
         document.removeEventListener('mouseup', this.handleMouseUp);
     }
     
-    // Новый метод для обработки нажатия мыши
     handleMouseDown(e) {
-        // Проверяем, не нажали ли мы на ручку или сам прямоугольник
         if (e.target.closest('.handle') || e.target.closest('.selection-rect')) {
             return;
         }
         
-        // Начинаем новое выделение
         this.startSelection(e);
     }
     
     clearSelection() {
-        console.log('Clearing selection');
-        
-        // Безопасная проверка и скрытие элементов
         if (this.selectionRect) {
             this.selectionRect.style.display = 'none';
             this.selectionRect.classList.remove('creating');
@@ -821,7 +742,6 @@ export class SelectionHandler {
             this.dimensionsLabel.style.display = 'none';
         }
         
-        // СБРАСЫВАЕМ selection К НУЛЕВЫМ ЗНАЧЕНИЯМ
         this.selection = {
             x: 0,
             y: 0,
@@ -830,24 +750,16 @@ export class SelectionHandler {
             scale: this.selection.scale || 1
         };
         
-        console.log('Selection cleared:', this.selection);
-        
-        // Скрываем кнопку отправки выделения
-        const convertBtn = document.getElementById('convertSelection');
-        if (convertBtn) {
-            convertBtn.style.display = 'none';
-        }
-        
-        // Сбрасываем overlay
         if (this.overlay) {
             this.overlay.style.backgroundColor = 'transparent';
         }
+        
+        this.hideActionButtons();
     }
 
     getSelectionCanvas() {
     console.log('getSelectionCanvas called');
     
-    // Проверяем, есть ли canvas и валидное выделение
     if (!this.canvas) {
         console.warn('Canvas not found');
         return null;
@@ -864,50 +776,53 @@ export class SelectionHandler {
     }
     
     try {
-        // Получаем bounding rect canvas
+        // Получаем размеры canvas в пикселях
+        const canvasWidth = this.canvas.width;
+        const canvasHeight = this.canvas.height;
+        
+        // Получаем размеры canvas на экране (CSS)
         const canvasRect = this.canvas.getBoundingClientRect();
-        console.log('Canvas rect:', canvasRect);
         
-        // Рассчитываем масштаб
-        const scaleX = this.canvas.width / canvasRect.width;
-        const scaleY = this.canvas.height / canvasRect.height;
-        console.log('Scale X:', scaleX, 'Scale Y:', scaleY);
-        
-        // Преобразуем координаты выделения в координаты canvas
-        const sx = this.selection.x * scaleX;
-        const sy = this.selection.y * scaleY;
-        const sw = this.selection.width * scaleX;
-        const sh = this.selection.height * scaleY;
-        
-        console.log('Selection coordinates:', {
-            screen: { x: this.selection.x, y: this.selection.y, w: this.selection.width, h: this.selection.height },
-            canvas: { sx, sy, sw, sh }
+        console.log('Canvas debug:', {
+            canvasSize: { width: canvasWidth, height: canvasHeight },
+            canvasRect: { width: canvasRect.width, height: canvasRect.height },
+            selection: { x: this.selection.x, y: this.selection.y, w: this.selection.width, h: this.selection.height }
         });
         
+        // Рассчитываем масштаб между экранными пикселями и реальными пикселями canvas
+        const scaleX = canvasWidth / canvasRect.width;
+        const scaleY = canvasHeight / canvasRect.height;
+        
+        console.log('Scales:', { scaleX, scaleY });
+        
+        // Преобразование координат выделения (которые уже относительно canvas на экране)
+        // в реальные пиксели canvas
+        const sx = Math.round(this.selection.x * scaleX);
+        const sy = Math.round(this.selection.y * scaleY);
+        const sw = Math.round(this.selection.width * scaleX);
+        const sh = Math.round(this.selection.height * scaleY);
+        
+        console.log('Canvas pixels:', { sx, sy, sw, sh });
+        
         // Проверяем границы
-        if (sx < 0 || sy < 0 || sx + sw > this.canvas.width || sy + sh > this.canvas.height) {
-            console.warn('Selection outside canvas bounds:', {
-                sx, sy, sw, sh,
-                canvasWidth: this.canvas.width,
-                canvasHeight: this.canvas.height
-            });
+        if (sx < 0 || sy < 0 || sx + sw > canvasWidth || sy + sh > canvasHeight) {
+            console.warn('Selection outside canvas bounds, adjusting...');
             
-            // Корректируем координаты, чтобы они не выходили за границы
-            const adjustedSx = Math.max(0, Math.min(sx, this.canvas.width - 1));
-            const adjustedSy = Math.max(0, Math.min(sy, this.canvas.height - 1));
-            const adjustedSw = Math.min(sw, this.canvas.width - adjustedSx);
-            const adjustedSh = Math.min(sh, this.canvas.height - adjustedSy);
+            const adjustedSx = Math.max(0, Math.min(sx, canvasWidth - 1));
+            const adjustedSy = Math.max(0, Math.min(sy, canvasHeight - 1));
+            const adjustedSw = Math.min(sw, canvasWidth - adjustedSx);
+            const adjustedSh = Math.min(sh, canvasHeight - adjustedSy);
             
             if (adjustedSw <= 0 || adjustedSh <= 0) {
                 console.error('Adjusted selection has zero or negative dimensions');
                 return null;
             }
             
-            // Используем функцию для сохранения качества
+            console.log('Adjusted canvas pixels:', { adjustedSx, adjustedSy, adjustedSw, adjustedSh });
+            
             return cropCanvasWithQuality(this.canvas, adjustedSx, adjustedSy, adjustedSw, adjustedSh);
         }
         
-        // Используем функцию для сохранения качества
         return cropCanvasWithQuality(this.canvas, sx, sy, sw, sh);
         
     } catch (error) {
@@ -915,88 +830,8 @@ export class SelectionHandler {
         return null;
     }
 }
-// Новый вспомогательный метод для извлечения области canvas
-extractCanvasRegion(sx, sy, sw, sh) {
-    try {
-        // Округляем координаты до целых чисел
-        sx = Math.round(sx);
-        sy = Math.round(sy);
-        sw = Math.round(sw);
-        sh = Math.round(sh);
-        
-        // Проверяем размеры
-        if (sw <= 0 || sh <= 0) {
-            console.error('Invalid region dimensions:', { sx, sy, sw, sh });
-            return null;
-        }
-        
-        console.log('Extracting canvas region with high quality:', { sx, sy, sw, sh });
-        
-        // Используем функцию для сохранения качества
-        return cropCanvasWithQuality(this.canvas, sx, sy, sw, sh);
-        
-    } catch (error) {
-        console.error('Error extracting canvas region:', error);
-        return null;
-    }
-}
     
     hasValidSelection() {
         return this.selection.width > 10 && this.selection.height > 10;
     }
-
-    setupTouchListeners() {
-    this.overlay.addEventListener('touchstart', this.handleTouchStart.bind(this), { passive: false });
-    document.addEventListener('touchmove', this.handleTouchMove.bind(this), { passive: false });
-    document.addEventListener('touchend', this.handleTouchEnd.bind(this));
-}
-
-    handleTouchStart(e) {
-        if (e.touches.length !== 1) return;
-        
-        e.preventDefault();
-        const touch = e.touches[0];
-        
-        // Преобразуем touch в mouse event
-        const mouseEvent = new MouseEvent('mousedown', {
-            clientX: touch.clientX,
-            clientY: touch.clientY
-        });
-        
-        this.startSelection(mouseEvent);
-    }
-
-    debugHandles() {
-    console.log('=== HANDLES DEBUG ===');
-    console.log('Handles element:', this.handles);
-    console.log('Handles children:', this.handles ? this.handles.children.length : 'no handles');
-    
-    if (this.handles) {
-        Array.from(this.handles.children).forEach((handle, index) => {
-            console.log(`Handle ${index}:`, {
-                className: handle.className,
-                style: handle.style.cssText,
-                hasListeners: handle.hasAttribute('data-has-listener')
-            });
-        });
-    }
-}
-
-logSelectionState() {
-    console.log('=== SELECTION STATE ===');
-    console.log('Selection object:', { ...this.selection });
-    console.log('SelectionRect style:', {
-        left: this.selectionRect?.style?.left,
-        top: this.selectionRect?.style?.top,
-        width: this.selectionRect?.style?.width,
-        height: this.selectionRect?.style?.height,
-        display: this.selectionRect?.style?.display
-    });
-    console.log('Flags:', {
-        isSelecting: this.isSelecting,
-        isResizing: this.isResizing,
-        isDragging: this.isDragging,
-        resizeHandle: this.resizeHandle
-    });
-}
 }

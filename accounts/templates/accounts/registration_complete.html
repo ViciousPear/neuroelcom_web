@@ -1,0 +1,291 @@
+{% extends 'base_clean.html' %}
+{% load static %}
+
+{% block title %}Подтвердите email{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/style.css' %}">
+<link rel="stylesheet" href="{% static 'css/login.css' %}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<style>
+    .login-page {
+        width: 480px !important;
+        margin-top: 60px !important;
+    }
+    
+    .login-form-container {
+        padding: 60px 40px 50px !important;
+        min-height: 480px !important;
+        display: block !important;
+    }
+    
+    .login-form {
+        width: 100%;
+        text-align: center;
+    }
+    
+    .email-icon {
+        width: 110px;
+        height: 110px;
+        margin: 0 auto 30px;
+        background: #2A7179;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 15px rgba(42, 113, 121, 0.3);
+        animation: pulse 2s infinite;
+    }
+    
+    .email-icon i {
+        font-size: 55px;
+        color: white;
+    }
+    
+    @keyframes pulse {
+        0% {
+            box-shadow: 0 4px 15px rgba(42, 113, 121, 0.3);
+        }
+        50% {
+            box-shadow: 0 4px 25px rgba(42, 113, 121, 0.6);
+        }
+        100% {
+            box-shadow: 0 4px 15px rgba(42, 113, 121, 0.3);
+        }
+    }
+    
+    .login-title {
+        color: #2A7179;
+        font-size: 28px;
+        font-weight: 500;
+        margin-bottom: 20px;
+        text-align: center;
+    }
+    
+    .success-message {
+        text-align: center;
+        margin-bottom: 30px;
+    }
+    
+    .success-message p {
+        color: #666;
+        font-size: 15px;
+        line-height: 1.6;
+        margin-bottom: 15px;
+    }
+    
+    .success-message .email-highlight {
+        background: #f0f7f8;
+        color: #2A7179;
+        font-weight: 600;
+        padding: 8px 15px;
+        border-radius: 20px;
+        display: inline-block;
+        margin: 10px 0;
+        border: 1px solid rgba(42, 113, 121, 0.2);
+    }
+    
+    .success-message .warning-text {
+        color: #FF6C0C;
+        font-size: 14px;
+        margin-top: 15px;
+        padding: 10px;
+        background: rgba(255, 108, 12, 0.1);
+        border-radius: 8px;
+        border-left: 3px solid #FF6C0C;
+    }
+    
+    .login-button {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 240px;
+        height: 48px;
+        margin: 0 auto 15px;
+        padding: 0;
+        background: #2A7179;
+        color: white;
+        text-decoration: none;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 16px;
+        transition: background 0.3s;
+        border: none;
+        cursor: pointer;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        text-align: center;
+    }
+    
+    .login-button:hover {
+        background: #1e555b;
+    }
+    
+    .login-button i {
+        margin-right: 8px;
+        font-size: 14px;
+    }
+    
+    .resend-link {
+        text-align: center;
+        margin: 20px 0 15px;
+    }
+    
+    .resend-link button {
+        background: none;
+        border: none;
+        color: #2A7179;
+        font-size: 14px;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        border-bottom: 1px dashed rgba(42, 113, 121, 0.3);
+        padding-bottom: 3px;
+    }
+    
+    .resend-link button:hover {
+        color: #1e555b;
+        border-bottom-color: #1e555b;
+    }
+    
+    .back-link {
+        text-align: center;
+        margin-top: 10px;
+    }
+    
+    .back-link a {
+        color: #999;
+        text-decoration: none;
+        font-size: 13px;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        transition: color 0.3s;
+    }
+    
+    .back-link a:hover {
+        color: #666;
+    }
+    
+    .back-link a i {
+        font-size: 12px;
+    }
+    
+    .site-footer {
+        margin-top: 40px;
+    }
+    
+    .steps {
+        display: flex;
+        justify-content: center;
+        gap: 30px;
+        margin: 25px 0;
+    }
+    
+    .step {
+        text-align: center;
+        flex: 0 1 auto;
+    }
+    
+    .step-number {
+        width: 30px;
+        height: 30px;
+        background: #2A7179;
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 8px;
+        font-size: 14px;
+        font-weight: 600;
+    }
+    
+    .step-text {
+        font-size: 12px;
+        color: #666;
+    }
+    
+    .step.active .step-number {
+        background: #FF6C0C;
+    }
+    
+    .step.active .step-text {
+        color: #FF6C0C;
+        font-weight: 500;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="login-wrapper">
+    <div class="login-page">
+        <div class="login-form-container">
+            <div class="login-form">
+                <div class="email-icon">
+                    <i class="fas fa-envelope-open-text"></i>
+                </div>
+                
+                <h2 class="login-title">Подтвердите email</h2>
+                
+                <div class="steps">
+                    <div class="step active">
+                        <div class="step-number">1</div>
+                        <div class="step-text">Регистрация</div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">2</div>
+                        <div class="step-text">Подтверждение</div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">3</div>
+                        <div class="step-text">Вход</div>
+                    </div>
+                </div>
+                
+                <div class="success-message">
+                    <p>Спасибо за регистрацию! Мы отправили письмо с подтверждением на ваш email:</p>
+                    
+                    {% if request.session.registered_email %}
+                        <div class="email-highlight">
+                            <i class="fas fa-envelope" style="margin-right: 5px;"></i>
+                            {{ request.session.registered_email }}
+                        </div>
+                    {% endif %}
+                    
+                    <p>Для завершения регистрации перейдите по ссылке в письме.</p>
+                    
+                    <div class="warning-text">
+                        <i class="fas fa-exclamation-triangle" style="margin-right: 5px;"></i>
+                        Письмо может попасть в папку "Спам". Пожалуйста, проверьте там.
+                    </div>
+                </div>
+                
+                <form method="post" action="{% url 'resend_verification' %}" style="display: inline;">
+                    {% csrf_token %}
+                    <input type="hidden" name="email" value="{{ request.session.registered_email }}">
+                    <div class="resend-link">
+                        <button type="submit">
+                            <i class="fas fa-redo-alt"></i> Отправить письмо повторно
+                        </button>
+                    </div>
+                </form>
+                
+                <a href="{% url 'login' %}" class="login-button">
+                    <i class="fas fa-arrow-right"></i> Перейти ко входу
+                </a>
+                
+                <div class="back-link">
+                    <a href="{% url 'upload' %}">
+                        <i class="fas fa-home"></i> На главную
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <footer class="site-footer">
+        <p>© 1998–2026 ООО «Элком». Все права защищены.</p>
+    </footer>
+</div>
+{% endblock %}

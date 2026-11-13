@@ -9,23 +9,26 @@
     <link rel="icon" href="{% static 'images/logo_mini.ico' %}" type="image/x-icon">
     <link rel="stylesheet" href="{% static 'css/results.css' %}">
 </head>
-<header>
+
+<body>
+    <header>
         <div class="logo">
             <img src="{% static '/images/logo_for_contacts.png' %}" alt="Логотип ЭЛКОМ">
         </div>
- </header>
-<body>
+
+        <div class="home">
+            <a href="{% url 'upload' %}" class="home-button">
+                <img src="{% static 'images/home_icon.png' %}" alt="На главную">
+            </a>
+        </div>
+    </header>
     <main class="main-content">
         <h1>Результаты распознавания</h1>
     <div class="container">
-        <!-- Выше изображение -->
         <div class="image-column">
         {% if result_image_url %}
-        {% comment %} <div class="image-wrapper"> {% endcomment %}
             <img src="{{ result_image_url }}" alt="Результат распознавания" class="zoomable-image">
             <button class="zoom-btn" title="Увеличить изображение"></button>
-        {% comment %} </div> {% endcomment %}
-        <!-- Модальное окно с элементами управления -->
         <div class="modal-overlay" id="image-modal">
             <div class="modal-content">
                 <div class="image-wrapper">
@@ -59,47 +62,59 @@
                         <div class="elements-container">
                         {% if category.is_grouped %}
                         <div class="actions">
-                                <button id="add" class="add-btn">+</button>
+                            <button id="add" class="add-btn">+</button>
+                        </div>
+                        {% for group in category.groups %}
+                        
+                        <div class="combobox-row-grouped">
+                            <div>{{ forloop.counter }}.</div>
+                            
+                            <!-- Маркировка -->
+                            <div class="combobox-group">
+                                <label>Маркировка</label>
+                                <input type="text" 
+                                    class="text-input marking-input" 
+                                    value="{{ group.marking|default:'' }}" 
+                                    readonly
+                                    placeholder="Например: QF1">
                             </div>
-                            {% for group in category.groups %}
-                            <div class="element-group">
-                                <div class="combobox-row-grouped">
-                                    <!-- Артикул -->
-                                    <div>{{ forloop.counter}}.</div>
-                                    <div class="combobox-group">
-                                        <label>Артикул</label>
-                                        <select class="combobox combobox-art" data-linked="name price">
-                                            {% for option in group.article_options %}
-                                            <option value="{{ option.value }}">{{ option.text }}</option>
-                                            {% endfor %}
-                                        </select>
-                                    </div>
-                                    
-                                    <!-- Название -->
-                                    <div class="combobox-group">
-                                        <label>Название</label>
-                                        <select class="combobox combobox-name" data-linked="article price">
-                                            {% for option in group.name_options %}
-                                            <option value="{{ option.value }}">{{ option.text }}</option>
-                                            {% endfor %}
-                                        </select>
-                                    </div>
-                                    
-                                    <!-- Цена -->
-                                    <div class="combobox-group">
-                                        <label>Цена</label>
-                                        <select class="combobox combobox-price" data-linked="article name">
-                                            {% for option in group.price_options %}
-                                            <option value="{{ option.value }}">{{ option.text }}</option>
-                                            {% endfor %}
-                                        </select>
-                                    </div>
-                                    <div class="actions">
-                                        <button id="delete" class="delete-btn">x</button>
-                                    </div>
-                                </div>
+
+                            <!-- Артикул -->
+                            <div class="combobox-group">
+                                <label>Артикул</label>
+                                <select class="combobox combobox-art" data-linked="name price">
+                                    {% for option in group.article_options %}
+                                    <option value="{{ option.value }}">{{ option.text }}</option>
+                                    {% endfor %}
+                                </select>
                             </div>
-                            {% endfor %}
+                            
+                            <!-- Название -->
+                            <div class="combobox-group">
+                                <label>Название</label>
+                                <select class="combobox combobox-name" data-linked="article price">
+                                    {% for option in group.name_options %}
+                                    <option value="{{ option.value }}">{{ option.text }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            
+                            <!-- Цена -->
+                            <div class="combobox-group">
+                                <label>Цена</label>
+                                <select class="combobox combobox-price" data-linked="article name">
+                                    {% for option in group.price_options %}
+                                    <option value="{{ option.value }}">{{ option.text }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            
+                            <!-- Кнопка удаления -->
+                            <div class="actions">
+                                <button id="delete" class="delete-btn">x</button>
+                            </div>
+                        </div>
+                        {% endfor %}
                         {% else %}
                         <div class="actions">
                                 <button id="add" class="add-btn">+</button>
@@ -178,6 +193,7 @@
 
 </body>
  <footer class="site-footer">
+        <p>Это ИИ на этапах тестирования. Внимательно перепроверяйте информацию и контекст.</p>
         <p>&copy; 1998–2026 ООО «Элком». Все права защищены.</p>
 </footer>
 </html>

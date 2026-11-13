@@ -10,12 +10,12 @@
 {% block content %}
 <div class="profile-wrapper">
     <!-- Убираем profile-background, так как фон уже есть в profile-wrapper -->
-    
-    <div class="profile-card">
-        <!-- Кнопка домой -->
+    <!-- Кнопка домой -->
         <a href="{% url 'upload' %}" class="home-button">
             <img src="{% static 'images/home_icon.png' %}" alt="На главную">
         </a>
+    <div class="profile-card">
+        
         
         <!-- Приветствие -->
         <h2 class="welcome-title">Добро пожаловать, {{ user.username }}!</h2>

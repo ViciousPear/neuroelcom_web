@@ -6,7 +6,7 @@ from urllib3.util.retry import Retry
 
 """Класс для работы с API"""
 class APIClient:
-    def __init__(self, base_url="http://82.202.129.245:8002"):
+    def __init__(self, base_url="http://213.172.24.109:8002"):
         self.base_url = base_url.rstrip('/')
         self.session = requests.Session()
         self.timeout = 500

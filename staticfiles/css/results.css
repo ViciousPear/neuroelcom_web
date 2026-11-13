@@ -11,13 +11,12 @@
     }
 
     .logo img{
-        width: 250px;  /* или auto, если нужно сохранить пропорции */
-        height: auto;  /* автоматическая высота */
-        /* Можно также использовать max-width */
+        width: 250px;  
+        height: auto; 
         max-width: 100%;
     }
 
-        /* Главный контент */
+    /* Главный контент */
     .main-content {
         flex: 1;
         padding: 20px;
@@ -48,16 +47,14 @@
         width: 100%;
         flex: 1;
         display: flex;
-        flex-direction: column; /* Элементы в колонку */
+        flex-direction: column; 
         gap: 20px; 
         box-sizing: border-box;
     }
 
     .image-column {
-        /*max-width: 100%; /* Занимает всю доступную ширину */
-        /*width: fit-content; /* Ширина по содержимому */
-        width: 100%; /* Занимает всю ширину контейнера */
-        max-width: 100%; /* Убираем ограничение */
+        width: 100%;
+        max-width: 100%; 
         margin: 0 auto;  
         max-height: 800px; 
         background: white;
@@ -65,12 +62,10 @@
         border-radius: 20px;
         padding: 10px;
         box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        /* align-self: flex-start; */
-        /* {% comment %} margin-top: 95px; {% endcomment %} */
         position: relative;
         display: flex;
-        overflow: hidden; /* Скрываем всё, что выходит за границы */
-        justify-content: center; /* Центрируем по горизонтали */
+        overflow: hidden; 
+        justify-content: center;
         align-items: center; 
         box-sizing: border-box;
     }
@@ -256,7 +251,7 @@
     transform: scale(1.1);
 }
 
-    /* Остальные стили (оставлены без изменений) */
+   
     h1 {
         color: #2A7179;
         text-align: center;
@@ -344,9 +339,9 @@
 
     .actions {
         width: 100%; /* Занимает всю доступную ширину */
-        max-width: 1200px; /* Ограничиваем максимальную ширину, если нужно */
+        max-width: 1200px;
         display: flex;
-        justify-content: space-between; /* Распределяет кнопки по краям */
+        justify-content: space-between; 
         margin: 20px auto;
         padding: 0px 1px; 
         margin-top: auto;

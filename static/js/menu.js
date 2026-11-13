@@ -1,3 +1,76 @@
+
+// Функция для показа стилизованного confirm диалога (скопирована из alerts_for_history.js)
+function confirmDialog(message, title = 'Подтверждение') {
+    return new Promise((resolve) => {
+        const overlay = document.createElement('div');
+        overlay.className = 'custom-alert-overlay';
+        
+        const dialog = document.createElement('div');
+        dialog.className = 'custom-confirm-dialog';
+        
+        const titleElement = document.createElement('div');
+        titleElement.className = 'custom-alert-title';
+        titleElement.textContent = title;
+        
+        const messageElement = document.createElement('div');
+        messageElement.className = 'custom-alert-message';
+        messageElement.textContent = message;
+        
+        const buttonsContainer = document.createElement('div');
+        buttonsContainer.className = 'custom-alert-buttons';
+        
+        // Кнопка "Отмена" с вашими классами
+        const cancelButton = document.createElement('button');
+        cancelButton.className = 'custom-alert-button cancel'; 
+        cancelButton.textContent = 'Отмена';
+        cancelButton.addEventListener('click', () => {
+            cleanup();
+            resolve(false);
+        });
+        
+        
+        const confirmButton = document.createElement('button');
+        confirmButton.className = 'custom-alert-button confirm'; 
+        confirmButton.textContent = 'Подтвердить';
+        confirmButton.addEventListener('click', () => {
+            cleanup();
+            resolve(true);
+        });
+        
+        buttonsContainer.appendChild(cancelButton);
+        buttonsContainer.appendChild(confirmButton);
+        
+        dialog.appendChild(titleElement);
+        dialog.appendChild(messageElement);
+        dialog.appendChild(buttonsContainer);
+        
+        document.body.appendChild(overlay);
+        document.body.appendChild(dialog);
+        
+        // Фокусировка на кнопке "Отмена"
+        cancelButton.focus();
+        
+        const handleKeyDown = (e) => {
+            if (e.key === 'Escape') {
+                cleanup();
+                resolve(false);
+            }
+        };
+        document.addEventListener('keydown', handleKeyDown);
+        
+        overlay.addEventListener('click', () => {
+            cleanup();
+            resolve(false);
+        });
+        
+        function cleanup() {
+            if (overlay.parentElement) overlay.remove();
+            if (dialog.parentElement) dialog.remove();
+            document.removeEventListener('keydown', handleKeyDown);
+        }
+    });
+}
+
 // Функция для инициализации меню
 window.initMenu = function(options) {
     const menuButton = document.getElementById('menuButton');
@@ -64,13 +137,14 @@ window.initMenu = function(options) {
     updateIcon();
 };
 
-// Функция для инициализации формы выхода (если нужна)
+// Функция для инициализации формы выхода
 window.initLogoutForm = function() {
     const logoutForm = document.getElementById('logoutForm');
     if (logoutForm) {
-        logoutForm.addEventListener('submit', function(e) {
+        logoutForm.addEventListener('submit', async function(e) {
             e.preventDefault();
-            if (confirm('Вы действительно хотите выйти?')) {
+            const confirmed = await confirmDialog('Вы действительно хотите выйти?', 'Выход');
+            if (confirmed) {
                 this.submit();
             }
         });

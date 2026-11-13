@@ -16,7 +16,7 @@ body {
     width: 100vw;
     height: 100vh;
     position: relative;
-    background: url('../images/elcom_graphic6.png') center/cover no-repeat;
+    background: url('../images/Computer. Tab1_beta.png') center/cover no-repeat;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -26,8 +26,8 @@ body {
 
 .profile-card {
     box-sizing: border-box;
-    width: 900px;  /* Увеличено с 800px */
-    height: 480px; /* Увеличено с 400px */
+    width: 950px;  /* Увеличено с 800px */
+    height: 500px; /* Увеличено с 400px */
     background: rgba(76, 198, 212, 0.1);
     border: 1px solid rgba(42, 113, 121, 0.06);
     box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.25);
@@ -39,26 +39,34 @@ body {
 }
 
 /* Кнопка домой */
+ /* Кнопка домой */
 .home-button {
     position: absolute;
-    top: 25px;
-    right: 30px;
-    width: 32px; /* Увеличена */
-    height: 32px; /* Увеличена */
-    cursor: pointer;
-    transition: transform 0.3s;
-    z-index: 3;
+    top: 20px;
+    right: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 60px;
+    height: 60px;
+    background: #2A7179;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    z-index: 100; /* Чтобы кнопка была поверх других элементов */
 }
 
 .home-button:hover {
-    transform: scale(1.1);
+    background: #1d5a61;
+    transform: scale(1.05);
 }
 
 .home-button img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
+    width: 30px;
+    height: 30px;
+    filter: brightness(0) invert(1);
 }
+
 
 /* Приветствие */
 .welcome-title {
@@ -107,8 +115,8 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, #FF6C0C, #FF8C3A);
-    color: white;
+    background: linear-gradient(135deg, #f9c8a6, #fdc298);
+    color: #8cdde6;
     font-size: 64px;
     font-weight: 300;
 }

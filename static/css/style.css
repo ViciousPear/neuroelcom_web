@@ -572,6 +572,309 @@ body {
     border: 1px solid #FF6C0C !important;
 }
 
+/* ===== СТИЛИ ДЛЯ МОДАЛЬНОГО ОКНА ИЗОБРАЖЕНИЯ ===== */
+
+/* Основной контейнер изображения */
+.image-main-container {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+    gap: 20px;
+    overflow: hidden;
+}
+
+/* Контейнер для области просмотра изображения */
+.image-viewer-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    gap: 15px;
+}
+
+/* Область просмотра изображения */
+.image-viewer {
+    flex: 1;
+    overflow: auto;
+    background: #f5f5f5;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 15px;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+    min-height: 400px;
+}
+
+.image-viewer canvas {
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    border-radius: 4px;
+    max-width: 100%;
+    height: auto;
+}
+
+/* Панель инструментов для изображения */
+.image-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+    margin-top: auto;
+}
+
+.toolbar-group {
+    display: flex;
+    gap: 10px;
+}
+
+/* Увеличиваем модальное окно */
+#imageModal .modal-content {
+    width: 98%;
+    max-width: 1800px; /* Увеличено с 1400px */
+    height: 95vh;
+    margin: 1% auto;
+    padding: 30px;
+}
+
+/* Увеличиваем область просмотра изображения */
+#imagePreview {
+    min-height: 600px; /* Увеличено с 400px */
+    max-height: 70vh;
+    background: #f5f5f5;
+    border: 2px solid #ddd;
+    border-radius: 12px;
+}
+
+/* Контейнер для canvas с большими размерами */
+#imagePreview .canvas-container {
+    min-height: 550px;
+    max-height: 65vh;
+}
+
+/* Увеличиваем canvas для лучшего качества */
+#imagePreview canvas {
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+    -ms-interpolation-mode: nearest-neighbor;
+}
+
+/* Увеличиваем панель инструментов */
+#imageModal .image-toolbar {
+    padding: 15px 20px;
+    margin-top: 20px;
+}
+
+#imageModal .tool-btn {
+    padding: 12px 20px;
+    font-size: 16px;
+}
+
+/* Увеличиваем боковую панель */
+#imageModal .image-sidebar {
+    width: 320px; /* Увеличено с 280px */
+}
+
+#imageModal .action-btn {
+    padding: 15px 25px;
+    font-size: 16px;
+}
+
+/* Увеличиваем кнопки действий */
+#sendFullImage, #sendImageSelection {
+    padding: 15px 25px;
+    font-size: 16px;
+    margin-bottom: 10px;
+}
+
+/* Увеличиваем заголовки */
+#imageModal .section-title {
+    font-size: 1.3rem;
+    margin-bottom: 20px;
+}
+
+/* Адаптивность для больших экранов */
+@media (min-width: 2000px) {
+    #imageModal .modal-content {
+        max-width: 2200px;
+    }
+    
+    #imagePreview {
+        min-height: 800px;
+    }
+}
+
+/* Для планшетов */
+@media (max-width: 1200px) {
+    #imageModal .modal-content {
+        width: 95%;
+        padding: 20px;
+    }
+    
+    #imagePreview {
+        min-height: 500px;
+    }
+}
+
+@media (max-width: 992px) {
+    #imageModal .image-main-container {
+        flex-direction: column;
+    }
+    
+    #imageModal .image-sidebar {
+        width: 100%;
+    }
+    
+    #imagePreview {
+        min-height: 400px;
+    }
+}
+
+@media (max-width: 768px) {
+    #imageModal .modal-content {
+        padding: 15px;
+    }
+    
+    #imagePreview {
+        min-height: 350px;
+    }
+    
+    #imageModal .tool-btn {
+        padding: 10px 15px;
+        font-size: 14px;
+    }
+}
+
+/* Боковая панель для изображения */
+.image-sidebar {
+    width: 280px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* Кнопки действий для изображения */
+.image-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* Кнопка отправки выделенного - УБИРАЕМ !important ИЗ display */
+#sendImageSelection {
+    background: linear-gradient(135deg, #FF6C0C, #E55B00);
+    color: white;
+    border: none;
+    position: relative;
+    overflow: hidden;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(255, 108, 12, 0.3);
+    display: none; /* Скрыта по умолчанию */
+    padding: 12px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    text-align: center;
+    font-size: 15px;
+    width: 100%;
+}
+
+/* Когда кнопка видима (через JS) */
+#sendImageSelection[style*="display: block"] {
+    display: block !important;
+}
+
+#sendImageSelection:hover {
+    background: linear-gradient(135deg, #E55B00, #CC4A00);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(255, 108, 12, 0.4);
+}
+
+#sendImageSelection:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(255, 108, 12, 0.3);
+}
+
+/* Анимация "сияния" для кнопки */
+#sendImageSelection:before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, 
+        transparent, 
+        rgba(255, 255, 255, 0.4), 
+        transparent);
+    transition: left 0.7s ease-in-out;
+}
+
+#sendImageSelection:hover:before {
+    left: 100%;
+}
+
+/* Кнопка отправки всего изображения */
+#sendFullImage {
+    background: #2A7179;
+    color: white;
+    border: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    padding: 12px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    text-align: center;
+    font-size: 15px;
+    width: 100%;
+}
+
+#sendFullImage:hover {
+    background: #235d66;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(42, 113, 121, 0.3);
+}
+
+/* Кнопка сброса выделения */
+#imageResetSelection {
+    display: none; /* Скрыта по умолчанию */
+}
+
+/* Контейнер для canvas изображения */
+.canvas-container {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    max-width: 100%;
+    max-height: 100%;
+    overflow: hidden;
+}
+
+.canvas-container canvas {
+    display: block;
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
+}
+
+/* Режим выделения активен для изображения */
+.canvas-container.selection-mode-active {
+    outline: 2px solid rgba(42, 113, 121, 0.5);
+    outline-offset: 2px;
+}
+
+
+
 @keyframes buttonPulse {
     0% {
         box-shadow: 0 0 0 0 rgba(42, 113, 121, 0.4);
@@ -583,6 +886,139 @@ body {
         box-shadow: 0 0 0 0 rgba(42, 113, 121, 0);
     }
 }
+
+/* Основной контейнер изображения */
+.image-main-container {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+    gap: 20px;
+    overflow: hidden;
+}
+
+/* Контейнер для области просмотра изображения */
+.image-viewer-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    gap: 15px;
+}
+
+/* Область просмотра изображения */
+.image-viewer {
+    flex: 1;
+    overflow: auto;
+    background: #f5f5f5;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 15px;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+    min-height: 400px;
+}
+
+.image-viewer canvas {
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    border-radius: 4px;
+    max-width: 100%;
+    height: auto;
+}
+
+/* Панель инструментов для изображения */
+.image-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+    margin-top: auto;
+}
+
+.toolbar-group {
+    display: flex;
+    gap: 10px;
+}
+
+/* Боковая панель для изображения */
+.image-sidebar {
+    width: 280px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* Кнопки действий для изображения */
+.image-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* Стили для кнопок (общие для PDF и изображения) */
+.tool-btn {
+    padding: 8px 15px;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 14px;
+    color: #333;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.tool-btn:hover {
+    background: #f0f0f0;
+    border-color: #2A7179;
+    color: #2A7179;
+}
+
+.tool-btn.active {
+    background: #2A7179 !important;
+    color: white !important;
+    border-color: #2A7179 !important;
+    box-shadow: 0 2px 8px rgba(42, 113, 121, 0.3) !important;
+}
+
+/* Контейнер для canvas изображения */
+.canvas-container {
+    position: relative !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    width: 100% !important;
+    height: 100% !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
+    overflow: hidden !important;
+}
+
+.canvas-container canvas {
+    display: block !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
+    width: auto !important;
+    height: auto !important;
+    object-fit: contain !important;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1) !important;
+    border-radius: 4px !important;
+}
+
+/* Режим выделения активен для изображения */
+.canvas-container.selection-mode-active {
+    outline: 2px solid rgba(42, 113, 121, 0.5) !important;
+    outline-offset: 2px !important;
+}
+
+
 
 /* Стиль для кнопки отправки выделенного */
 #convertSelection {
@@ -625,6 +1061,8 @@ body {
 #convertSelection:hover:before {
     left: 100% !important;
 }
+
+
 
 /* ОТЛАДОЧНЫЕ СТИЛИ (можно удалить после отладки) */
 .selection-debug {
@@ -1702,6 +2140,132 @@ body {
     height: 1px;
     background: linear-gradient(to right, transparent, rgba(42, 113, 121, 0.3), transparent);
     margin: 8px 0; /* Увеличено с 5px */
+}
+
+/* Стили для кастомного confirm диалога */
+.custom-alert-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 9999;
+    animation: fadeIn 0.3s ease;
+}
+
+/* Стили для самого диалогового окна */
+.custom-confirm-dialog {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    min-width: 320px;
+    max-width: 400px;
+    width: 90%;
+    z-index: 10000;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    animation: slideIn 0.3s ease;
+    font-family: 'Manrope', sans-serif;
+}
+
+/* Стили для заголовка диалога */
+.custom-alert-title {
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    color: #333;
+    font-family: 'Manrope', sans-serif;
+}
+
+/* Стили для сообщения диалога */
+.custom-alert-message {
+    font-size: 16px;
+    color: #666;
+    margin-bottom: 24px;
+    line-height: 1.5;
+    font-family: 'Manrope', sans-serif;
+}
+
+/* Анимации */
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translate(-50%, -48%);
+    }
+    to {
+        opacity: 1;
+        transform: translate(-50%, -50%);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+/* Стили для кнопок (у вас уже есть, но добавим для полноты) */
+.custom-alert-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 0;
+}
+
+.custom-alert-button {
+    padding: 12px 30px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    font-family: 'Manrope', sans-serif;
+    min-width: 80px;
+    border: none;
+    transition: all 0.3s ease;
+    font-size: 14px;
+}
+
+.custom-alert-button.confirm {
+    background-color: #2A7179;
+    color: white;
+}
+
+.custom-alert-button.confirm:hover {
+    background-color: #1d5a61;
+    transform: scale(1.02);
+}
+
+.custom-alert-button.cancel {
+    background-color: #FF6C0C;
+    color: white;
+}
+
+.custom-alert-button.cancel:hover {
+    background-color: #ff6d0cc4;
+    transform: scale(1.02);
+}
+
+/* Адаптивность для мобильных устройств */
+@media (max-width: 480px) {
+    .custom-confirm-dialog {
+        min-width: 280px;
+        padding: 20px;
+    }
+    
+    .custom-alert-buttons {
+        gap: 10px;
+    }
+    
+    .custom-alert-button {
+        padding: 10px 20px;
+        min-width: 70px;
+    }
 }
 
 /* Toast уведомления - если их нет в style.css, добавьте */

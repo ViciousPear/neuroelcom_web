@@ -9,7 +9,7 @@ class ToastManager {
     }
 
     init() {
-        // Создаем контейнер для тостов, если его нет
+        // Контейнер для тостов, если его нет
         if (!this.container) {
             this.container = document.querySelector('.toast-container');
             if (!this.container) {
@@ -31,11 +31,10 @@ class ToastManager {
         return icons[type] || icons.info;
     }
 
-    // Показать toast
     show(message, type = 'info', title = '', duration = 4000) {
         this.init();
 
-        // Создаем элемент toast
+        // Новый элемент toast
         const toast = document.createElement('div');
         toast.className = `toast toast-${type}`;
         
@@ -60,15 +59,15 @@ class ToastManager {
             <button class="toast-close" onclick="this.closest('.toast').remove()">×</button>
         `;
 
-        // Добавляем в контейнер
+        // Добавление в контейнер
         this.container.appendChild(toast);
 
-        // Удаляем через указанное время
+        // Удаление через указанное время
         const timeoutId = setTimeout(() => {
             this.remove(toast);
         }, duration);
 
-        // Сохраняем ссылку на toast и timeout
+        // Ссылкуа на toast и timeout
         this.toasts.push({
             element: toast,
             timeoutId: timeoutId
@@ -77,11 +76,11 @@ class ToastManager {
         return toast;
     }
 
-    // Удалить конкретный toast
+    // Удаление конкретного toast
     remove(toast) {
         if (!toast || !toast.parentElement) return;
 
-        // Находим индекс toast в массиве
+        // Поиск индекса toast в массиве
         const index = this.toasts.findIndex(t => t.element === toast);
         if (index !== -1) {
             clearTimeout(this.toasts[index].timeoutId);
@@ -128,7 +127,7 @@ class ToastManager {
     }
 }
 
-// Создаем глобальный экземпляр
+// Глобальный экземпляр
 window.toast = new ToastManager();
 
 // Для обратной совместимости с существующим кодом

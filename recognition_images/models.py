@@ -18,6 +18,7 @@ class Component(models.Model):
     
     old_user_id = models.IntegerField(null=True, blank=True)
     
+    marking = models.CharField(max_length=50, blank=True, null=True, verbose_name='Маркировка')
     component_type = models.CharField(max_length=20, choices=COMPONENT_TYPES)
     article = models.CharField(max_length=50)
     name = models.CharField(max_length=255)
@@ -88,6 +89,26 @@ class DetectionResult(models.Model):
         related_name='detection_results'
     )
     
+    STATUS_CHOICES = (
+        ('pending', 'Ожидает обработки'),
+        ('edited', 'Отредактировано'),
+        ('finalized', 'Завершен'),
+    )
+    
+    status = models.CharField(
+        'Статус', 
+        max_length=20, 
+        choices=STATUS_CHOICES, 
+        default='pending',
+        db_index=True
+    )
+    results_viewed = models.BooleanField(
+        'Просмотрено на странице результатов',
+        default=False,
+        db_index=True
+    )
+    updated_at = models.DateTimeField('Обновлено', auto_now=True)
+
     old_user_id = models.IntegerField(null=True, blank=True)
     
     class Meta:

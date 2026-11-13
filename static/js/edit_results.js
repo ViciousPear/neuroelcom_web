@@ -3,7 +3,6 @@
 import { initImageZoom } from './modules_for_results/image-zoom.js';
 import { showCustomAlert } from './alerts.js';
 
-// КОНСТАНТЫ ДОЛЖНЫ БЫТЬ ОПРЕДЕЛЕНЫ ДО КЛАССА
 const TYPE_TRANSLATIONS = {
     'QF': 'Автоматические выключатели',
     'transformer': 'Трансформаторы',
@@ -11,22 +10,22 @@ const TYPE_TRANSLATIONS = {
 };
 
 const CurrentUtils = {
-    // Очистка значения: удаление всех нецифровых символов (кроме разрешенных)
+    // Удаление всех нецифровых символов (кроме разрешенных)
     cleanCurrentValue: function(value, isClosingCurrent = false) {
         if (!value || typeof value !== 'string') return '';
         
-        // Удаляем все буквы и лишние символы
+        // Удаление всех букв и лишних символов
         let cleaned = value.replace(/[^0-9.,\-\s]/g, '');
         
-        // Для замыкающего тока: оставляем цифры, точку, запятую
-        // Для обычного тока: оставляем цифры, точку, запятую, минус
+        // Для замыкающего тока: цифры, точку, запятую
+        // Для обычного тока: цифры, точку, запятую, минус
         if (isClosingCurrent) {
             cleaned = cleaned.replace(/[^0-9.,\s]/g, '');
         } else {
             cleaned = cleaned.replace(/[^0-9.,\-\s]/g, '');
         }
         
-        // Убираем лишние пробелы
+        // Очистка от лишних пробелов
         cleaned = cleaned.trim();
         
         return cleaned;
@@ -36,13 +35,11 @@ const CurrentUtils = {
     formatForDisplay: function(value, isClosingCurrent = false) {
         if (!value) return '';
         
-        // Убираем возможные единицы измерения, если они уже есть
         let cleaned = value.replace(/[АаAaКкKk]/g, '');
         
-        // Если после очистки ничего не осталось, возвращаем пустую строку
         if (!cleaned.trim()) return '';
         
-        // Добавляем единицы измерения
+        // Единицы измерения
         if (isClosingCurrent) {
             return cleaned + 'кА';
         } else {
@@ -63,10 +60,10 @@ const CurrentUtils = {
     
     // Валидация ввода для поля тока
     validateCurrentInput: function(value, isClosingCurrent = false) {
-        // Если пустое значение - разрешаем
+
         if (!value) return true;
         
-        // Проверяем на разрешенные символы
+        // Проверка на разрешенные символы
         const pattern = isClosingCurrent ? /^[0-9.,\s]*$/ : /^[0-9.,\-\s]*$/;
         if (!pattern.test(value)) {
             return false;
@@ -75,7 +72,7 @@ const CurrentUtils = {
         return true;
     },
     
-    // Проверяем, есть ли уже единицы измерения в строке
+    // Проверка, есть ли уже единицы измерения в строке
     hasUnit: function(value) {
         if (!value || typeof value !== 'string') return false;
         return /[АаAaКкKk]/.test(value);
@@ -112,7 +109,7 @@ class EditManager {
     setupEventListeners() {
         console.log('EditManager: настройка обработчиков событий');
         
-        // Удаляем старые обработчики перед добавлением новых
+        // Удаление старых обработчиков перед добавлением новых
         this.removeEventListeners();
         
         // Кнопка добавления элемента
@@ -157,7 +154,7 @@ class EditManager {
     }
     
     removeEventListeners() {
-        // Удаляем обработчики чтобы избежать дублирования
+        // Удаление обработчиков чтобы избежать дублирования
         const buttons = [
             'add-element', 'add-transformer', 'add-counter', 
             'add-first-element', 'save-and-search', 'cancel-edit'
@@ -229,10 +226,8 @@ class EditManager {
                 }
             }
             
-            // Проверяем что это массив
             if (!Array.isArray(detectedData)) {
                 console.warn('detectedData не массив:', detectedData);
-                // Попробуем преобразовать если это словарь
                 if (typeof detectedData === 'object' && detectedData !== null) {
                     detectedData = [detectedData];
                     console.log('Преобразовали объект в массив:', detectedData);
@@ -244,18 +239,18 @@ class EditManager {
             
             console.log('Обрабатываем данные, количество элементов:', detectedData.length);
             
-            // Сбрасываем элементы
+            // Сброс элементов
             this.elements = [];
             this.elementCounter = 1;
             
-            // Группируем элементы по типу
+            // Группировка элементы по типу
             const elementGroups = {
                 QF: [],
                 transformer: { elements: [], count: 0 },
                 counter: { elements: [], count: 0 }
             };
             
-            // Считаем количество элементов каждого типа
+            // Количество элементов каждого типа
             detectedData.forEach((element) => {
                 const elementType = element.type || 'QF';
                 const params = element.parameters || {};
@@ -269,7 +264,8 @@ class EditManager {
                             voltage: params.voltage || '',
                             current_close: params.current_close || '',
                             mounting_type: params.mounting_type || '',
-                            polus: params.polus || ''
+                            polus: params.polus || '',
+                            id_qf: params.id_qf || ''
                         }
                     });
                 } 
@@ -286,7 +282,7 @@ class EditManager {
             console.log('- Трансформаторов: элементов =', elementGroups.transformer.count);
             console.log('- Счетчиков: элементов =', elementGroups.counter.count);
             
-            // Добавляем QF элементы
+            // Добавление QF элементов
             elementGroups.QF.forEach((element) => {
                 this.elements.push({
                     type: 'QF',
@@ -295,7 +291,7 @@ class EditManager {
                 });
             });
             
-            // Добавляем трансформатор (один элемент с количеством ЭЛЕМЕНТОВ)
+            // Добавление трансформатора (один элемент с количеством)
             if (elementGroups.transformer.count > 0) {
                 this.elements.push({
                     type: 'transformer',
@@ -306,7 +302,7 @@ class EditManager {
                 });
             }
             
-            // Добавляем счетчик (один элемент с количеством ЭЛЕМЕНТОВ)
+            // Добавление счетчика (один элемент с количеством)
             if (elementGroups.counter.count > 0) {
                 this.elements.push({
                     type: 'counter',
@@ -337,55 +333,56 @@ class EditManager {
     }
     
     prepareElementsForAPI() {
-        console.log('Подготовка элементов для API');
+    console.log('Подготовка элементов для API');
+    
+    return this.elements.map(element => {
+        const params = element.parameters || {};
         
-        return this.elements.map(element => {
-            const params = element.parameters || {};
+        console.log(`Подготовка элемента ${element.type}:`, params);
+        
+        if (element.type === 'QF') {
+            // Единицы измерения к току и замыкающему току
+            let current = params.current || '';
+            let current_close = params.current_close || '';
             
-            console.log(`Подготовка элемента ${element.type}:`, params);
-            
-            if (element.type === 'QF') {
-                // ГАРАНТИРОВАННО добавляем единицы измерения к току и замыкающему току
-                let current = params.current || '';
-                let current_close = params.current_close || '';
-                
-                // Если значение есть и еще нет единиц измерения - добавляем
-                if (current && !CurrentUtils.hasUnit(current)) {
-                    current = CurrentUtils.formatForDisplay(current, false);
-                }
-                
-                if (current_close && !CurrentUtils.hasUnit(current_close)) {
-                    current_close = CurrentUtils.formatForDisplay(current_close, true);
-                }
-                
-                console.log(`Ток: ${current}, Замыкающий ток: ${current_close}`);
-                
-                return {
-                    type: 'QF',
-                    parameters: {
-                        current: current,
-                        voltage: params.voltage || '',
-                        current_close: current_close,
-                        mounting_type: params.mounting_type || '',
-                        name: params.name || '',
-                        polus: params.polus || ''
-                    }
-                };
-            } else {
-                return {
-                    type: element.type,
-                    parameters: {
-                        quantity: params.quantity || 1
-                    }
-                };
+            // Если значение есть и еще нет единиц измерения - добавление
+            if (current && !CurrentUtils.hasUnit(current)) {
+                current = CurrentUtils.formatForDisplay(current, false);
             }
-        });
-    }
+            
+            if (current_close && !CurrentUtils.hasUnit(current_close)) {
+                current_close = CurrentUtils.formatForDisplay(current_close, true);
+            }
+            
+            console.log(`Ток: ${current}, Замыкающий ток: ${current_close}`);
+            
+            return {
+                type: 'QF',
+                parameters: {
+                    id_qf: params.id_qf || '',  
+                    current: params.current,
+                    voltage: params.voltage || '',
+                    current_close: current_close,
+                    mounting_type: params.mounting_type || '',
+                    name: params.name || '',
+                    polus: params.polus || ''
+                }
+            };
+        } else {
+            return {
+                type: element.type,
+                parameters: {
+                    quantity: params.quantity || 1
+                }
+            };
+        }
+    });
+}
     
     renderElements() {
         console.log('EditManager: рендеринг элементов, количество:', this.elements.length);
         
-        // Группируем элементы по типу
+        // Группировка элементов по типу
         this.groupElementsByTypeForDisplay();
         
         const groupsContainer = document.getElementById('groups-container');
@@ -398,7 +395,6 @@ class EditManager {
         
         groupsContainer.innerHTML = '';
         
-        // Показываем/скрываем пустое состояние
         if (this.elements.length === 0) {
             this.showEmptyState();
             return;
@@ -410,7 +406,7 @@ class EditManager {
         // Порядок отображения групп
         const groupOrder = ['QF', 'transformer', 'counter'];
         
-        // Создаем группы в заданном порядке
+        // Создание групп в заданном порядке
         groupOrder.forEach(type => {
             if (this.groups[type]) {
                 const group = this.groups[type];
@@ -437,7 +433,7 @@ class EditManager {
             this.groups[type].elements.push({
                 ...element,
                 originalIndex: index,
-                // Сохраняем элемент как есть
+                // Сохранение элемента без изменений
                 data: element
             });
         });
@@ -477,13 +473,13 @@ class EditManager {
     
         const groupElementsContainer = groupElement.querySelector('.group-elements');
         
-        // ОТЛАДКА: показываем элементы в группе
+        // Для отладки
         console.log(`Элементы в группе ${type}:`);
         groupData.elements.forEach((element, idx) => {
             console.log(`  [${idx}] элемент:`, element);
         });
         
-        // Для каждого элемента в группе передаем его индекс в группе
+        // Для каждого элемента в группе происходит передача его индекса в группе
         groupData.elements.forEach((element, elementIndex) => {
             console.log(`Рендеринг элемента ${elementIndex + 1} в группе ${type}`);
             this.createElementCard(element, element.originalIndex, elementIndex + 1, groupElementsContainer);
@@ -494,6 +490,7 @@ class EditManager {
         
     createElementCard(element, globalIndex, groupIndex, container) {
     console.log(`createElementCard: type=${element.type}, globalIndex=${globalIndex}, groupIndex=${groupIndex}`);
+    console.log(`Данные элемента:`, element);
     
     const templateId = this.getTemplateIdForType(element.type);
     const template = document.getElementById(templateId);
@@ -509,12 +506,9 @@ class EditManager {
     card.dataset.type = element.type;
     card.dataset.index = globalIndex;
     
-    // Номер элемента В ГРУППЕ (начинается с 1)
+    // Номер элемента в группе
     const elementNumber = card.querySelector('.element-number');
-    console.log(`Найден элемент .element-number:`, elementNumber);
-    
     if (elementNumber) {
-        console.log(`Устанавливаем номер: ${groupIndex}`);
         elementNumber.textContent = groupIndex;
     }
     
@@ -532,7 +526,18 @@ class EditManager {
     }
     
     // Заполняем данные в зависимости от типа
-    this.fillElementForm(element, card);
+    this.fillElementForm(element, card, globalIndex);
+    
+    // ПРИНУДИТЕЛЬНАЯ ПРОВЕРКА для id_qf
+    if (element.type === 'QF' && element.parameters?.id_qf) {
+        const idInput = card.querySelector('.id-input');
+        if (idInput) {
+            console.log('Принудительная установка id_qf в createElementCard:', element.parameters.id_qf);
+            idInput.value = element.parameters.id_qf;
+        } else {
+            console.error('idInput не найден при принудительной установке');
+        }
+    }
     
     // Обработчики событий
     const deleteBtn = card.querySelector('.btn-delete');
@@ -546,7 +551,6 @@ class EditManager {
         });
     }
     
-    // Для QF элементов настраиваем обработчики всех полей
     if (element.type === 'QF') {
         this.setupQFEventHandlers(element, globalIndex, card);
     } else {
@@ -568,8 +572,108 @@ class EditManager {
                 return 'qf-element-template';
         }
     }
+
+    calculatePolus(currentRange, mountingType) {
+    const mounting = String(mountingType).trim();
+    const strRaw = String(currentRange || '').trim();
+
+    // Извлечение всех чисел (целые и дробные, с точкой или запятой)
+    const matches = strRaw.match(/\d+(?:[.,]\d+)?/g);
     
-    fillElementForm(element, card) {
+    if (!matches || matches.length === 0) {
+        return mounting === '1' ? 3 : '';
+    }
+
+    // Перевод строк в числа
+    const numbers = matches.map(val => parseFloat(val.replace(',', '.')));
+
+    const maxCurrent = Math.max(...numbers);
+
+    // Если тип монтажа = 1 ИЛИ максимальный ток >= 100А (включая диапазон 40-100А и выше)
+    if (mounting === '1' || maxCurrent >= 100) {
+        return 3;
+    }
+
+    // Если максимальный ток строго меньше 100А (например, диапазон 25-63А)
+    if (maxCurrent < 100) {
+        return 1;
+    }
+
+    return '';
+}
+    
+    fillElementForm(element, card, index) {
+    const params = element.parameters || {};
+    
+    console.log(`Заполняем форму для элемента ${element.type}:`, params);
+    
+    if (element.type === 'QF') {
+        const nameInput = card.querySelector('.name-input');
+        const currentInput = card.querySelector('.current-input');
+        const voltageInput = card.querySelector('.voltage-input');
+        const currentCloseInput = card.querySelector('.current-close-input');
+        const mountingSelect = card.querySelector('.mounting-select');
+        const polusInput = card.querySelector('.polus-input');
+        const idInput = card.querySelector('.id-input');
+        
+        console.log('idInput найден:', idInput);
+        
+        if (nameInput) {
+            console.log('Устанавливаем name:', params.name);
+            nameInput.value = params.name || '';
+        }
+        
+        if (voltageInput) {
+            console.log('Устанавливаем voltage:', params.voltage);
+            voltageInput.value = params.voltage || '';
+        }
+        
+        if (polusInput) {
+            let polusValue = params.polus || '';
+
+            if (!polusValue) {
+                polusValue = this.calculatePolus(params.current, params.mounting_type);
+                if (polusValue) {
+                    this.updateElementParameter(index, 'polus', polusValue);
+                }
+            }
+
+            console.log('Устанавливаем polus:', polusValue);
+            polusInput.value = polusValue;
+        }
+        
+        if (idInput) {
+            console.log('Устанавливаем idInput.value =', params.id_qf);
+            idInput.value = params.id_qf || '';
+        } else {
+            console.error('idInput не найден в DOM!');
+        }
+
+        if (currentInput) {
+            const cleanedCurrent = CurrentUtils.formatForStorage(params.current || '');
+            console.log('Устанавливаем current:', cleanedCurrent);
+            currentInput.value = cleanedCurrent;
+        }
+        
+        if (currentCloseInput) {
+            const cleanedCurrentClose = CurrentUtils.formatForStorage(params.current_close || '');
+            console.log('Устанавливаем current_close:', cleanedCurrentClose);
+            currentCloseInput.value = cleanedCurrentClose;
+        }
+        
+        if (mountingSelect) {
+            console.log('Устанавливаем mounting_type:', params.mounting_type);
+            mountingSelect.value = params.mounting_type || '';
+        }
+    } else {
+        const quantityInput = card.querySelector('.quantity-input');
+        if (quantityInput) {
+            console.log('Устанавливаем quantity:', params.quantity);
+            quantityInput.value = params.quantity || 1;
+        }
+    }
+}
+    fillElementForm(element, card, index) {
         const params = element.parameters || {};
         
         console.log(`Заполняем форму для элемента ${element.type}:`, params);
@@ -581,35 +685,68 @@ class EditManager {
             const currentCloseInput = card.querySelector('.current-close-input');
             const mountingSelect = card.querySelector('.mounting-select');
             const polusInput = card.querySelector('.polus-input');
+            const idInput = card.querySelector('.id-input');
             
-            if (nameInput) nameInput.value = params.name || '';
-            if (voltageInput) voltageInput.value = params.voltage || '';
-            if (polusInput) polusInput.value = params.polus || '';
+            console.log('idInput найден:', idInput);
             
-            // Очищаем ток и замыкающий ток от единиц измерения при загрузке
+            if (nameInput) {
+                console.log('Устанавливаем name:', params.name);
+                nameInput.value = params.name || '';
+            }
+            
+            if (voltageInput) {
+                console.log('Устанавливаем voltage:', params.voltage);
+                voltageInput.value = params.voltage || '';
+            }
+            
+            if (polusInput) {
+                let polusValue = params.polus || '';
+
+                if (!polusValue) {
+                    polusValue = this.calculatePolus(params.current, params.mounting_type);
+                    if (polusValue) {
+                        this.updateElementParameter(index, 'polus', polusValue);
+                    }
+                }
+
+                console.log('Устанавливаем polus:', polusValue);
+                polusInput.value = polusValue;
+            }
+            
+            if (idInput) {
+                console.log('Устанавливаем idInput.value =', params.id_qf);
+                idInput.value = params.id_qf || '';
+            } else {
+                console.error('idInput не найден в DOM!');
+            }
+
             if (currentInput) {
                 const cleanedCurrent = CurrentUtils.formatForStorage(params.current || '');
+                console.log('Устанавливаем current:', cleanedCurrent);
                 currentInput.value = cleanedCurrent;
             }
             
             if (currentCloseInput) {
                 const cleanedCurrentClose = CurrentUtils.formatForStorage(params.current_close || '');
+                console.log('Устанавливаем current_close:', cleanedCurrentClose);
                 currentCloseInput.value = cleanedCurrentClose;
             }
             
-            // Тип монтажа (селект)
             if (mountingSelect) {
+                console.log('Устанавливаем mounting_type:', params.mounting_type);
                 mountingSelect.value = params.mounting_type || '';
             }
         } else {
             const quantityInput = card.querySelector('.quantity-input');
             if (quantityInput) {
+                console.log('Устанавливаем quantity:', params.quantity);
                 quantityInput.value = params.quantity || 1;
             }
         }
     }
     
     setupQFEventHandlers(element, index, card) {
+        const idInput = card.querySelector('.id-input');  
         const nameInput = card.querySelector('.name-input');
         const currentInput = card.querySelector('.current-input');
         const voltageInput = card.querySelector('.voltage-input');
@@ -618,12 +755,14 @@ class EditManager {
         const polusInput = card.querySelector('.polus-input');
         
         const inputs = [
+            { element: idInput, field: 'id_qf' }, 
             { element: nameInput, field: 'name' },
             { element: currentInput, field: 'current' },
             { element: voltageInput, field: 'voltage' },
             { element: currentCloseInput, field: 'current_close' },
             { element: polusInput, field: 'polus' }
         ];
+    
         
         inputs.forEach(({ element: input, field }) => {
             if (input) {
@@ -725,7 +864,7 @@ class EditManager {
             return;
         }
         
-        // Ищем существующий элемент этого типа
+        // Существующий элемент этого типа
         const existingElementIndex = this.elements.findIndex(e => e.type === type);
         
         if (existingElementIndex !== -1) {
@@ -746,43 +885,42 @@ class EditManager {
     }
     
     getDefaultParametersForType(type) {
-        switch (type) {
-            case 'QF':
-                return {
-                    name: '',
-                    current: '',
-                    voltage: '',
-                    current_close: '',
-                    mounting_type: '',
-                    polus: ''
-                };
-            case 'transformer':
-            case 'counter':
-                return {
-                    quantity: 1
-                };
-            default:
-                return {};
-        }
+    switch (type) {
+        case 'QF':
+            return {
+                id_qf: '',  
+                name: '',
+                current: '',
+                voltage: '',
+                current_close: '',
+                mounting_type: '',
+                polus: ''
+            };
+        case 'transformer':
+        case 'counter':
+            return {
+                quantity: 1
+            };
+        default:
+            return {};
     }
+}
     
     // Метод для показа кастомного confirm
     showConfirmDialog(message, title, onConfirm) {
-        // Проверяем, не открыт ли уже диалог
+        // Проверка на существующий открытый диалог
         if (document.querySelector('.custom-alert-overlay')) {
             console.warn('Диалог уже открыт');
             return;
         }
         
-        // Создаем overlay
         const overlay = document.createElement('div');
         overlay.className = 'custom-alert-overlay';
         
-        // Создаем диалог
+        // Создание диалога
         const dialog = document.createElement('div');
         dialog.className = 'custom-alert';
         
-        // Создаем элементы
         const titleElement = document.createElement('div');
         titleElement.className = 'custom-alert-title';
         titleElement.textContent = title || 'Подтверждение';
@@ -844,9 +982,9 @@ class EditManager {
             
         } else {
             this.elements.splice(index, 1);
-            // Обновляем индексы оставшихся элементов
+            
             for (let i = index; i < this.elements.length; i++) {
-                // Обновляем только оригинальный индекс
+               
                 if (this.elements[i].originalIndex !== undefined) {
                     this.elements[i].originalIndex = i;
                 }
@@ -861,7 +999,7 @@ class EditManager {
     
     updateElementNumbers() {
         // Нумерация будет обновляться при рендеринге на основе положения элемента в группе
-        // Поэтому нам нужно только обновить группировку
+        // Здесь обновляется группировка
         this.groupElementsByTypeForDisplay();
     }
 
@@ -891,13 +1029,13 @@ class EditManager {
     saveAndSearch() {
         console.log('Сохранение и поиск в БД');
         
-        // Проверяем, есть ли элементы
+        // Проверка на наличие элементов
         if (this.elements.length === 0) {
             showCustomAlert('Добавьте хотя бы один элемент для поиска', 'Внимание');
             return;
         }
         
-        // Подготавливаем данные для отправки
+        // Данные для отправки
         const data = {
             result_id: window.RESULT_ID,
             edited_elements: this.prepareElementsForAPI()
@@ -905,7 +1043,7 @@ class EditManager {
         
         console.log('Отправляемые данные:', data);
         
-        // Показываем индикатор загрузки
+        // Индикатор загрузки
         const saveBtn = document.getElementById('save-and-search');
         if (!saveBtn) {
             showCustomAlert('Кнопка сохранения не найдена', 'Ошибка');
@@ -984,7 +1122,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Инициализация зума
         initImageZoom();
         
-        // Создаем и инициализируем EditManager
+        // Инициализация EditManager
         window.editManager = new EditManager();
         await window.editManager.init();
         

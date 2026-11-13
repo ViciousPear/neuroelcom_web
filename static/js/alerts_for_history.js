@@ -1,14 +1,12 @@
 // Функция для показа стилизованного alert
 window.showCustomAlert = function(message, title = 'Уведомление') {
-    // Создаем overlay
     const overlay = document.createElement('div');
     overlay.className = 'custom-alert-overlay';
     
-    // Создаем alert
     const alert = document.createElement('div');
     alert.className = 'custom-alert';
     
-    // Создаем элементы через DOM вместо innerHTML
+
     const titleElement = document.createElement('div');
     titleElement.className = 'custom-alert-title';
     titleElement.textContent = title;
@@ -129,7 +127,7 @@ window.showToast = function(message, type = 'info', title = '', duration = 5000)
     }
 };
 
-// Создаем контейнер для тостов при загрузке
+// Создание контейнера для тостов при загрузке
 document.addEventListener('DOMContentLoaded', function() {
     if (!document.querySelector('.toast-container')) {
         createToastContainer();

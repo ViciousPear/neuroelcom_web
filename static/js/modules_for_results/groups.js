@@ -2,24 +2,23 @@ import { getRecognitionData, shouldExclude } from './utils.js';
 import { initComboboxesForGroup } from './comboboxes.js';
 import { showToast } from '../alerts.js';
 
-
 // Функция для удаления строки
 export function initDeleteButtons() {
     document.querySelectorAll('.delete-btn').forEach(btn => {
         btn.addEventListener('click', function() {
             const group = this.closest('.element-group');
-    if (group) {
-        const container = group.closest('.elements-container');
-        group.remove();
-        // Перенумерование оставшихся групп
-        const groups = container.querySelectorAll('.element-group');
-        groups.forEach((group, index) => {
-            const numberDiv = group.querySelector('.combobox-row > div:first-child, .combobox-row-grouped > div:first-child');
-            if (numberDiv) {
-                numberDiv.textContent = `${index + 1}.`;
+            if (group) {
+                const container = group.closest('.elements-container');
+                group.remove();
+                // Перенумерование оставшихся групп
+                const groups = container.querySelectorAll('.element-group');
+                groups.forEach((group, index) => {
+                    const numberDiv = group.querySelector('.combobox-row > div:first-child, .combobox-row-grouped > div:first-child');
+                    if (numberDiv) {
+                        numberDiv.textContent = `${index + 1}.`;
+                    }
+                });
             }
-        });
-        }
         });
     });
 }
@@ -32,13 +31,10 @@ export function initAddButtons() {
     if (!buttons.length) return;
 
     buttons.forEach(btn => {
-        // Удаление старых обработчиков для избежания дублирования
         btn.removeEventListener('click', addButtonHandler);
         btn.addEventListener('click', addButtonHandler);
     });
-
 }
-
 
 // Обработчик кнопки добавления
 function addButtonHandler() {
@@ -53,8 +49,6 @@ function addButtonHandler() {
 
         // Определение категории
         let componentType;
-
-        // Ключ для доступа к данным
         let dataKey; 
         
         if (categoryName.includes('Автоматические')) {
@@ -89,22 +83,38 @@ function addButtonHandler() {
         } else {
             container.appendChild(newGroup);
         }
-        console.log("Data source check:", {
-        componentType,
-        dataKey,
-        actualData: originalData[dataKey], // Какие данные реально получили
-        automaticData: originalData.automatic // Для сравнения
-        });
 
-        // Инициализация группы
+        // Инициализация группы (НО НЕ ТРОГАЕМ МАРКИРОВКУ В КОМБОБОКСАХ)
         initComboboxesForGroup(newGroup);
         initDeleteButtonForGroup(newGroup);
         initQuantityInputForGroup(newGroup);
+        
+        // Отдельно инициализируем маркировку, если она есть
+        initMarkingForGroup(newGroup, categoryData, componentType);
 
     } catch (error) {
         console.error('Ошибка при добавлении группы:', error);
         showToast('Ошибка при добавлении группы', 'error', 'Ошибка');
     }
+}
+
+// Новая функция для инициализации маркировки
+function initMarkingForGroup(group, categoryData, componentType) {
+    if (componentType !== 'automatic') return;
+    
+    const markingInput = group.querySelector('.marking-input');
+    if (!markingInput) return;
+    
+    // Если есть данные с маркировкой, устанавливаем их
+    if (categoryData && categoryData.length > 0 && categoryData[0].marking) {
+        markingInput.value = categoryData[0].marking;
+    }
+    
+    // Добавляем обработчик для сохранения маркировки при изменении
+    markingInput.addEventListener('change', function() {
+        // Здесь можно добавить логику сохранения маркировки, если нужно
+        console.log('Маркировка изменена:', this.value);
+    });
 }
 
 // Создание новой группы элементов
@@ -122,6 +132,9 @@ function createGroupElement(categoryData, container, componentType) {
             if (numberDiv) {
                 numberDiv.textContent = `${nextNumber}.`;
             }
+            
+            // Сброс значений комбобоксов (но не маркировки)
+            resetComboboxesOnly(newGroup);
         } else {
             // Создание новой группы с номером 1
             newGroup = document.createElement('div');
@@ -134,9 +147,16 @@ function createGroupElement(categoryData, container, componentType) {
             newGroup.innerHTML = template;
         }
 
-        // Заполнение данных
-        fillComboboxes(newGroup, categoryData, componentType);
-        resetGroupValues(newGroup);
+        // Заполнение данных комбобоксов
+        fillComboboxesOnly(newGroup, categoryData, componentType);
+        
+        // Отдельно устанавливаем маркировку, если это автоматические выключатели
+        if (componentType === 'automatic') {
+            const markingInput = newGroup.querySelector('.marking-input');
+            if (markingInput && categoryData && categoryData.length > 0 && categoryData[0].marking) {
+                markingInput.value = categoryData[0].marking;
+            }
+        }
 
         return newGroup;
     } catch (error) {
@@ -146,119 +166,27 @@ function createGroupElement(categoryData, container, componentType) {
     }
 }
 
-// Шаблон для combobox-row(трансформаторы/счетчики)
-function getComboboxRowTemplate(number, withQuantity = false) {
-    return `
-        <div class="combobox-row">
-            <div>${number}.</div>
-            <div class="combobox-group">
-                <label>Артикул</label>
-                <select class="combobox combobox-art" data-linked="name price">
-                    <option value="">-- Выберите --</option>
-                </select>
-            </div>
-            <div class="combobox-group">
-                <label>Название</label>
-                <select class="combobox combobox-name" data-linked="article price">
-                    <option value="">-- Выберите --</option>
-                </select>
-            </div>
-            ${withQuantity ? `
-            <div class="combobox-group">
-                <label>Количество</label>
-                <input type="number" min="1" value="1" class="group-count-input">
-            </div>
-            ` : ''}
-            <div class="combobox-group">
-                <label>Цена</label>
-                <select class="combobox combobox-price" data-linked="article name">
-                    <option value="">-- Выберите --</option>
-                </select>
-            </div>
-            <div class="actions">
-                <button class="delete-btn">x</button>
-            </div>
-        </div>
-    `;
-}
-
-// Шаблон для combobox-row-grouped(выключатели)
-function getComboboxRowGroupedTemplate(number) {
-    return `
-        <div class="combobox-row-grouped">
-            <div>${number}.</div>
-            <div class="combobox-group">
-                <label>Артикул</label>
-                <select class="combobox combobox-art" data-linked="name price">
-                    <option value="">-- Выберите --</option>
-                </select>
-            </div>
-            <div class="combobox-group">
-                <label>Название</label>
-                <select class="combobox combobox-name" data-linked="article price">
-                    <option value="">-- Выберите --</option>
-                </select>
-            </div>
-            <div class="combobox-group">
-                <label>Цена</label>
-                <select class="combobox combobox-price" data-linked="article name">
-                    <option value="">-- Выберите --</option>
-                </select>
-            </div>
-            <div class="actions">
-                <button class="delete-btn">x</button>
-            </div>
-        </div>
-    `;
-}
-
-
-function validateData(data, componentType) {
-    if (!Array.isArray(data)) {
-        console.error(`Данные для ${componentType} не являются массивом`);
-        return false;
-    }
-
-    // Проверка на пустоту
-    if (data.length === 0) {
-        console.warn(`Пустые данные для ${componentType}`);
-        return false;
-    }
-
-    // Проверка структуры первого элемента
-    const sampleItem = data[0];
-    if (!sampleItem || typeof sampleItem !== 'object') {
-        console.error(`Некорректная структура данных для ${componentType}`);
-        return false;
-    }
-
-    // Обязательные поля
-    const requiredFields = ['id', 'name', 'price'];
-    const missingFields = requiredFields.filter(field => !(field in sampleItem));
+// Новая функция для сброса только комбобоксов
+function resetComboboxesOnly(groupElement) {
+    if (!groupElement) return;
     
-    if (missingFields.length > 0) {
-        console.error(`Отсутствуют обязательные поля (${missingFields.join(', ')}) для ${componentType}`);
-        return false;
-    }
-
-    // Дополнительные проверки для конкретных типов
-    if (componentType === 'transformer') {
-        if (!data.every(item => item.type === 'transformer')) {
-            console.warn('Обнаружены данные не трансформаторов в разделе трансформаторов');
-        }
-    }
-
-    if (componentType === 'counter') {
-        if (!data.every(item => item.type === 'counter')) {
-            console.warn('Обнаружены данные не счетчиков в разделе счетчиков');
-        }
-    }
-
-    return true;
+    // Сброс только комбобоксов, не трогаем marking-input
+    groupElement.querySelectorAll('.combobox').forEach(select => {
+        select.selectedIndex = 0;
+    });
+    
+    // Сброс текстовых инпутов (кроме маркировки)
+    groupElement.querySelectorAll('.text-input:not(.marking-input)').forEach(input => {
+        input.value = '';
+    });
+    
+    // Сброс количества
+    const quantityInput = groupElement.querySelector('.group-count-input');
+    if (quantityInput) quantityInput.value = 1;
 }
 
-// Обновленная функция fillComboboxes
-function fillComboboxes(groupElement, data, componentType) {
+// Новая функция для заполнения только комбобоксов
+function fillComboboxesOnly(groupElement, data, componentType) {
     if (!groupElement || !data) return;
 
     console.log(`Filling comboboxes for ${componentType}`, data);
@@ -340,24 +268,102 @@ function fillComboboxes(groupElement, data, componentType) {
     });
 }
 
+// Шаблон для combobox-row(трансформаторы/счетчики)
+function getComboboxRowTemplate(number, withQuantity = false) {
+    return `
+        <div class="combobox-row">
+            <div>${number}.</div>
+            <div class="combobox-group">
+                <label>Артикул</label>
+                <select class="combobox combobox-art" data-linked="name price">
+                    <option value="">-- Выберите --</option>
+                </select>
+            </div>
+            <div class="combobox-group">
+                <label>Название</label>
+                <select class="combobox combobox-name" data-linked="article price">
+                    <option value="">-- Выберите --</option>
+                </select>
+            </div>
+            ${withQuantity ? `
+            <div class="combobox-group">
+                <label>Количество</label>
+                <input type="number" min="1" value="1" class="group-count-input">
+            </div>
+            ` : ''}
+            <div class="combobox-group">
+                <label>Цена</label>
+                <select class="combobox combobox-price" data-linked="article name">
+                    <option value="">-- Выберите --</option>
+                </select>
+            </div>
+            <div class="actions">
+                <button class="delete-btn">x</button>
+            </div>
+        </div>
+    `;
+}
 
-// Сброс значений в группе
-function resetGroupValues(groupElement) {
-    if (!groupElement) return;
+// Шаблон для combobox-row-grouped(выключатели)
+function getComboboxRowGroupedTemplate(number) {
+    return `
+        <div class="combobox-row-grouped">
+            <div>${number}.</div>
+            <div class="combobox-group">
+                <label>Маркировка</label>
+                <input type="text" class="text-input marking-input" readonly placeholder="Например: QF1">
+            </div>
+            <div class="combobox-group">
+                <label>Артикул</label>
+                <select class="combobox combobox-art" data-linked="name price">
+                    <option value="">-- Выберите --</option>
+                </select>
+            </div>
+            <div class="combobox-group">
+                <label>Название</label>
+                <select class="combobox combobox-name" data-linked="article price">
+                    <option value="">-- Выберите --</option>
+                </select>
+            </div>
+            <div class="combobox-group">
+                <label>Цена</label>
+                <select class="combobox combobox-price" data-linked="article name">
+                    <option value="">-- Выберите --</option>
+                </select>
+            </div>
+            <div class="actions">
+                <button class="delete-btn">x</button>
+            </div>
+        </div>
+    `;
+}
+
+function validateData(data, componentType) {
+    if (!Array.isArray(data)) {
+        console.error(`Данные для ${componentType} не являются массивом`);
+        return false;
+    }
+
+    if (data.length === 0) {
+        console.warn(`Пустые данные для ${componentType}`);
+        return false;
+    }
+
+    const sampleItem = data[0];
+    if (!sampleItem || typeof sampleItem !== 'object') {
+        console.error(`Некорректная структура данных для ${componentType}`);
+        return false;
+    }
+
+    const requiredFields = ['id', 'name', 'price'];
+    const missingFields = requiredFields.filter(field => !(field in sampleItem));
     
-    // Сброс комбобоксов
-    groupElement.querySelectorAll('.combobox').forEach(select => {
-        select.selectedIndex = 0;
-    });
-    
-    // Сбрас текстовых инпутов
-    groupElement.querySelectorAll('.text-input').forEach(input => {
-        input.value = '';
-    });
-    
-    // Сброс количества
-    const quantityInput = groupElement.querySelector('.group-count-input');
-    if (quantityInput) quantityInput.value = 1;
+    if (missingFields.length > 0) {
+        console.error(`Отсутствуют обязательные поля (${missingFields.join(', ')}) для ${componentType}`);
+        return false;
+    }
+
+    return true;
 }
 
 // Инициализация кнопки удаления для группы
@@ -385,7 +391,7 @@ function handleDelete() {
         const container = group.closest('.elements-container');
         group.remove();
         
-        // Перенумеровывание оставшейся группы
+        // Перенумеровывание оставшихся групп
         const groups = container.querySelectorAll('.element-group');
         groups.forEach((group, index) => {
             const numberDiv = group.querySelector('.combobox-row > div:first-child, .combobox-row-grouped > div:first-child');

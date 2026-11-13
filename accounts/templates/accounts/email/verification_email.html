@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: 'Manrope', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background: #2A7179;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 10px 10px 0 0;
+        }
+        .content {
+            background: #f9f9f9;
+            padding: 30px;
+            border: 1px solid #ddd;
+            border-radius: 0 0 10px 10px;
+        }
+        .button {
+            display: inline-block;
+            background: #2A7179;
+            color: white;
+            text-decoration: none;
+            padding: 12px 30px;
+            border-radius: 6px;
+            margin: 20px 0;
+            font-weight: 600;
+        }
+        .button:hover {
+            background: #1e555b;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 12px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>NeuroElcom</h1>
+    </div>
+    
+    <div class="content">
+        <h2>Здравствуйте, {{ user.username }}!</h2>
+        
+        <p>Благодарим вас за регистрацию на сайте NeuroElcom. Для завершения регистрации и активации вашего аккаунта, пожалуйста, подтвердите ваш email, перейдя по ссылке ниже:</p>
+        
+        <div style="text-align: center;">
+            <a href="{{ verification_url }}" class="button">Подтвердить email</a>
+        </div>
+        
+        <p>Если кнопка не работает, скопируйте и вставьте следующую ссылку в адресную строку браузера:</p>
+        <p style="word-break: break-all; background: #eee; padding: 10px; border-radius: 5px; font-size: 12px;">{{ verification_url }}</p>
+        
+        <p><strong>Важно:</strong> Ссылка действительна в течение 24 часов.</p>
+        
+        <p>Если вы не регистрировались на нашем сайте, просто проигнорируйте это письмо.</p>
+        
+        <p>С уважением,<br>Команда NeuroElcom</p>
+    </div>
+    
+    <div class="footer">
+        <p>© 1998–2026 ООО «Элком». Все права защищены.</p>
+        <p>Это автоматическое письмо, пожалуйста, не отвечайте на него.</p>
+    </div>
+</body>
+</html>

@@ -66,11 +66,11 @@ class DetectionResultAdmin(admin.ModelAdmin):
     
     list_display = (
         'id', 'result_id_short', 'user_link', 'session_key_short',
-        'name', 'created_at', 'is_edited', 
+        'name', 'created_at', 'is_edited', 'is_favorite',
         'components_count'
     )
     
-    list_filter = ('is_edited', 'created_at', 'user')
+    list_filter = ('is_edited', 'is_favorite', 'created_at', 'user')
     
     search_fields = ('name', 'result_id', 'user__username', 'session_key')
     

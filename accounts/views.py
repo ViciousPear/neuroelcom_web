@@ -7,38 +7,84 @@ from recognition_images.models import DetectionResult, Component
 from django.shortcuts import render, get_object_or_404
 import logging
 from django.http import JsonResponse
+from django.utils.http import urlsafe_base64_decode
+from django.utils.encoding import force_str
+from django.contrib.auth.tokens import default_token_generator
+from django.contrib.auth import get_user_model
+from .utils import send_verification_email
+from django.views.decorators.csrf import csrf_protect
+from django.views.decorators.cache import never_cache
+from django.contrib.auth.views import PasswordResetView, PasswordResetDoneView, PasswordResetConfirmView, PasswordResetCompleteView
+
+User = get_user_model()
 logger = logging.getLogger(__name__)
 
+@never_cache
+@csrf_protect
 def register_view(request):
+
+    if request.user.is_authenticated:
+        messages.info(request, 'Вы уже вошли в систему.')
+        return redirect('dashboard')
+    
     if request.method == 'POST':
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
-            user = form.save()
-            login(request, user)
+            # Создание неактивированного пользователя
+            user = form.save(commit=False)
+            user.is_active = False
+            user.save()
             
-            # Переносим данные из анонимной сессии в аккаунт
-            session_key = request.session.session_key
-            DetectionResult.objects.filter(
-                session_key=session_key, 
-                user__isnull=True
-            ).update(user=user)
-            Component.objects.filter(
-                session_key=session_key, 
-                user__isnull=True
-            ).update(user=user)
+            # Отправка письма с подтверждением
+            send_verification_email(request, user)
             
-            messages.success(request, 'Регистрация прошла успешно!')
-            return redirect('dashboard')
-        # Убираем messages.error - ошибки будут в форме
+            # Сохранение email в сессии для отображения на странице подтверждения
+            request.session['registered_email'] = user.email
+            
+            messages.success(
+                request, 
+                'Регистрация прошла успешно! На ваш email отправлено письмо с ссылкой для подтверждения.'
+            )
+            
+            # Перенаправление на новую страницу
+            return redirect('registration_complete')
+        else:
+            messages.error(request, 'Пожалуйста, исправьте ошибки в форме')
     else:
         form = CustomUserCreationForm()
     
     return render(request, 'accounts/register.html', {'form': form})
 
+def registration_complete_view(request):
+    """Страница после успешной регистрации с просьбой подтвердить email"""
+    return render(request, 'accounts/registration_complete.html', {'user': request.user})
+
+@never_cache
+def verify_email(request, uidb64, token):
+    """Подтверждение email по ссылке из письма"""
+    try:
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        user = User.objects.get(pk=uid)
+    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+        user = None
+    
+    if user is not None and default_token_generator.check_token(user, token):
+        if user.is_active:
+            messages.info(request, 'Ваш email уже был подтверждён ранее. Можете войти в систему.')
+            return redirect('login')
+        
+        user.is_active = True
+        user.save()
+        messages.success(request, 'Email успешно подтвержден! Теперь вы можете войти в аккаунт.')
+        return redirect('login')
+    else:
+        messages.error(request, 'Ссылка для подтверждения недействительна или устарела.')
+        return redirect('register')
+
+@never_cache
 def view_result(request, result_id):
     """Просмотр конкретного результата (версия для accounts)"""
     try:
-        # Ищем результат
         if request.user.is_authenticated:
             detection_result = get_object_or_404(
                 DetectionResult, 
@@ -52,7 +98,6 @@ def view_result(request, result_id):
                 session_key=request.session.session_key
             )
         
-        # Получаем связанные компоненты
         components = Component.objects.filter(
             result_id=result_id
         ).order_by('component_type', 'group_index')
@@ -68,82 +113,89 @@ def view_result(request, result_id):
     except Exception as e:
         messages.error(request, 'Результат не найден')
         return redirect('dashboard')
+    
+def resend_verification_email(request):
+    """Повторная отправка письма с подтверждением"""
+    if request.method == 'POST':
+        email = request.POST.get('email')
+        
+        try:
+            user = User.objects.get(email=email, is_active=False)
+            send_verification_email(request, user)
+            messages.success(request, 'Письмо с подтверждением отправлено повторно!')
+        except User.DoesNotExist:
+            messages.error(request, 'Пользователь с таким email не найден или уже активирован.')
+        
+        return redirect('registration_complete')
+    
+    return redirect('register')
 
+@never_cache
+@csrf_protect
 def login_view(request):
+   
+    if request.user.is_authenticated:
+        messages.info(request, 'Вы уже вошли в систему.')
+        return redirect('dashboard')
+    
     if request.method == 'POST':
         form = CustomAuthenticationForm(request.POST)
         if form.is_valid():
-            username = form.cleaned_data.get('username')
-            password = form.cleaned_data.get('password')
-            user = authenticate(request, username=username, password=password)
-            if user is not None:
-                login(request, user)
-                
-                # Устанавливаем долгую сессию для авторизованного пользователя
-                request.session.set_expiry(2592000)  # 30 дней
-                
-                # Переносим данные из анонимной сессии
-                session_key = request.session.session_key
-                
-                # Ищем результаты по старой сессии
-                old_results = DetectionResult.objects.filter(
-                    session_key=session_key, 
-                    user__isnull=True
+            user = form.get_user()
+            
+            if not user.is_active:
+                send_verification_email(request, user)
+                messages.warning(
+                    request, 
+                    'Ваш email не подтвержден. Мы отправили новое письмо с ссылкой для подтверждения.'
                 )
-                
-                if old_results.exists():
-                    # Переносим результаты
-                    old_results.update(user=user)
-                    
-                    # Переносим компоненты
-                    Component.objects.filter(
-                        session_key=session_key, 
-                        user__isnull=True
-                    ).update(user=user)
-                    
-                    messages.success(
-                        request, 
-                        f'Добро пожаловать, {user.username}! Ваши результаты из гостевой сессии сохранены.'
-                    )
-                else:
-                    # Проверяем, есть ли результаты с истекшей сессией по result_id
-                    # (это сложнее, требует дополнительной логики)
-                    pass
-                
-                next_url = request.GET.get('next', 'dashboard')
-                return redirect(next_url)
+                return redirect('login')
+            
+            login(request, user)
+            request.session.set_expiry(2592000)  # 30 дней
+            
+            # Переносим данные из анонимной сессии
+            session_key = request.session.session_key
+            DetectionResult.objects.filter(
+                session_key=session_key, 
+                user__isnull=True
+            ).update(user=user)
+            Component.objects.filter(
+                session_key=session_key, 
+                user__isnull=True
+            ).update(user=user)
+            
+            messages.success(request, f'Добро пожаловать, {user.username}!')
+            next_url = request.GET.get('next', 'dashboard')
+            return redirect(next_url)
     else:
         form = CustomAuthenticationForm()
     
     return render(request, 'accounts/login.html', {'form': form})
 
+@never_cache
 def logout_view(request):
     logout(request)
     messages.success(request, 'Вы успешно вышли из системы')
     return redirect('upload')
 
 @login_required
+@never_cache
 def dashboard_view(request):
     """Личный кабинет пользователя / История запросов за последний месяц"""
     from django.utils import timezone
     from datetime import timedelta
     
-    # Дата месяц назад
     month_ago = timezone.now() - timedelta(days=30)
     
-    # Получаем результаты пользователя за последний месяц
     recent_results = DetectionResult.objects.filter(
         user=request.user,
-        created_at__gte=month_ago  # только за последний месяц
+        created_at__gte=month_ago
     ).order_by('-created_at')
     
-    # Для отладки - проверим формат изображений
     for result in recent_results:
-        if result.image_base64:
-            # Убедимся, что изображение в правильном формате
-            if not result.image_base64.startswith('data:image'):
-                # Если это просто base64, добавляем префикс
-                result.image_base64 = f"data:image/jpeg;base64,{result.image_base64}"
+        if result.image_base64 and not result.image_base64.startswith('data:image'):
+            result.image_base64 = f"data:image/jpeg;base64,{result.image_base64}"
     
     context = {
         'recent_results': recent_results,
@@ -152,32 +204,7 @@ def dashboard_view(request):
     return render(request, 'accounts/dashboard.html', context)
 
 @login_required
-def profile_view(request):
-    """Просмотр и редактирование профиля"""
-    if request.method == 'POST':
-        user = request.user
-        user.first_name = request.POST.get('first_name', '')
-        user.last_name = request.POST.get('last_name', '')
-        user.phone = request.POST.get('phone', '')
-        user.company = request.POST.get('company', '')
-        user.position = request.POST.get('position', '')  # Добавлено поле должности
-        user.save()
-        messages.success(request, 'Профиль обновлен')
-        return redirect('profile')
-    
-    return render(request, 'accounts/profile.html', {'user': request.user})
-
-def password_reset_view(request):
-    """Заглушка для восстановления пароля"""
-    if request.method == 'POST':
-        email = request.POST.get('email')
-        # Здесь будет логика отправки письма
-        messages.info(request, f'Инструкция по восстановлению пароля отправлена на {email}')
-        return redirect('login')
-    
-    return render(request, 'accounts/password_reset.html')
-
-@login_required
+@never_cache
 def profile_view(request):
     """Просмотр и редактирование профиля"""
     if request.method == 'POST':
@@ -188,7 +215,6 @@ def profile_view(request):
         user.company = request.POST.get('company', '')
         user.position = request.POST.get('position', '')
         
-        # Обработка загрузки аватара
         if 'avatar' in request.FILES:
             user.avatar = request.FILES['avatar']
         
@@ -202,7 +228,6 @@ def profile_view(request):
 def delete_result(request):
     """Удаление результата из истории через GET параметр result_id"""
     if request.method == 'POST':
-        # Получаем result_id из GET параметров
         result_id = request.GET.get('result_id')
         
         if not result_id:
@@ -219,7 +244,6 @@ def delete_result(request):
                 user=request.user
             )
             
-            # Удаляем связанные компоненты
             components_count = Component.objects.filter(
                 result_id=result_id,
                 user=request.user
@@ -230,9 +254,7 @@ def delete_result(request):
                 user=request.user
             ).delete()
             
-            # Сохраняем имя для лога перед удалением
             result_name = result.name
-            
             result.delete()
             
             logger.info(f"Результат {result_id} ({result_name}) удален. Удалено компонентов: {components_count}")
@@ -260,3 +282,28 @@ def delete_result(request):
         'success': False, 
         'error': 'Метод не поддерживается'
     }, status=405)
+
+class CustomPasswordResetView(PasswordResetView):
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.is_authenticated:
+            messages.info(request, 'Вы уже вошли в систему. Используйте профиль для смены пароля.')
+            return redirect('dashboard')
+        return super().dispatch(request, *args, **kwargs)
+
+class CustomPasswordResetDoneView(PasswordResetDoneView):
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.is_authenticated:
+            return redirect('dashboard')
+        return super().dispatch(request, *args, **kwargs)
+
+class CustomPasswordResetConfirmView(PasswordResetConfirmView):
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.is_authenticated:
+            return redirect('dashboard')
+        return super().dispatch(request, *args, **kwargs)
+
+class CustomPasswordResetCompleteView(PasswordResetCompleteView):
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.is_authenticated:
+            return redirect('dashboard')
+        return super().dispatch(request, *args, **kwargs)

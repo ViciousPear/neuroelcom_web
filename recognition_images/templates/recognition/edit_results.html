@@ -16,10 +16,10 @@
     </header>
     
     <main class="main-content">
+       
         <h1>Редактирование результатов распознавания</h1>
         
         <div class="container">
-            <!-- Секция изображения - СВЕРХУ -->
             <div class="top-section">
                 <div class="image-container">
                     {% if image_base64 %}
@@ -34,7 +34,7 @@
                 <div class="modal-overlay" id="image-modal">
                     <div class="modal-content">
                         <span class="close-modal">&times;</span>
-                        <img src="" alt="Увеличенное изображение" id="modal-image">
+                        <img src="" alt="Увеличенное изображение результата распознавания" id="modal-image">
                         <div class="zoom-controls">
                             <button class="zoom-in-btn" title="Увеличить">+</button>
                             <button class="zoom-reset-btn" title="Сбросить">100%</button>
@@ -43,8 +43,9 @@
                     </div>
                 </div>
             </div>
-            
-            <!-- Секция редактирования - СНИЗУ -->
+             <div class="warning-text">
+                <p>Это ИИ на этапах тестирования, оно может допускать ошибки. Внимательно перепроверяйте информацию и контекст.</p>
+            </div>
             <div class="bottom-section">
                 <div class="edit-section">
                     <h2>Распознанные элементы</h2>
@@ -99,6 +100,11 @@
             <div class="element-form qf-form">
                 
                 <div class="form-group">
+                    <label>Маркировка:</label>
+                    <input type="text" class="id-input" placeholder="Например: QF1">
+                </div>
+
+                <div class="form-group">
                     <label>Ток, А:</label>
                     <input type="text" class="current-input" placeholder="Например: 16">
                 </div>
@@ -128,12 +134,12 @@
                 </div>
                 
                 <div class="form-group small-input number-input">
-                <label>Кол-во полюсов:</label>
-                <input type="number" class="polus-input" min="1" max="4" defaultValue ="3" value="3" 
-                       step="1" inputmode="numeric" pattern="[1-4]" 
-                       title="Введите число от 1 до 4" placeholder="1-4">
+                    <label>Кол-во полюсов:</label>
+                    <input type="number" class="polus-input" min="1" max="4" value="3" 
+                           step="1" inputmode="numeric" pattern="[1-4]" 
+                           title="Введите число от 1 до 4" placeholder="1-4">
+                </div>
             </div>
-        </div>
         </div>
     </template>
     
@@ -203,13 +209,14 @@
             
             // Также устанавливаем изображение для модального окна
             const modalImage = document.getElementById('modal-image');
-            if (modalImage && window.IMAGE_BASE64 && window.IMAGE_BASE64.startsWith('data:image')) {
+            if (modalImage && window.IMAGE_BASE64) {
                 modalImage.src = window.IMAGE_BASE64;
             }
         });
     </script>
-</body>
-<footer class="site-footer">
+    <footer class="site-footer">
     <p>&copy; 1998–2026 ООО «Элком». Все права защищены.</p>
 </footer>
+</body>
+
 </html>

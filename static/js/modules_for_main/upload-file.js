@@ -26,9 +26,6 @@ export class FileUploadHandler {
     }
 
     // Обработка изображений
-    
-
-        // Обработка изображений
     async processImageFile(file, form) {
         this.startProcessing();
         this.clearMessages();
@@ -196,7 +193,7 @@ export class FileUploadHandler {
             
         } catch (error) {
             this.handleProcessError(error);
-            throw error; // Пробрасываем ошибку дальше для обработки в основном коде
+            throw error; 
         } finally {
             this.endProcessing();
         }

@@ -13,6 +13,8 @@ urlpatterns = [
     path('api/check-results-access/', views.api_check_results_access, name='api_check_results_access'),
 
     path('result/<str:result_id>/', views.view_result_by_id, name='view_result'),
+     path('history/go-to-result/<str:result_id>/', views.history_redirect, name='history_redirect'),
+    path('edit-result/<str:result_id>/', views.edit_results_by_id, name='edit_results_by_id'),
     path('results/delete/', accounts_views.delete_result, name='delete_result'),
     # path('debug-components/<str:result_id>/', views.debug_components, name='debug_components'),
 ]

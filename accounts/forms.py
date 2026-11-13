@@ -1,6 +1,17 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from .models import User
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.http import urlsafe_base64_encode
+from django.utils.encoding import force_bytes
+from django.core.mail import send_mail
+from django.template.loader import render_to_string
+from django.conf import settings
+from django.contrib.auth.forms import PasswordResetForm
+from django.core.mail import send_mail
+from django.template.loader import render_to_string
+from django.conf import settings
+
 
 class CustomUserCreationForm(UserCreationForm):
     # Обязательные поля
@@ -88,7 +99,6 @@ class CustomUserCreationForm(UserCreationForm):
         })
     )
     
-    # Необязательные поля
     company = forms.CharField(
         label='Компания',
         max_length=255,
@@ -107,6 +117,44 @@ class CustomUserCreationForm(UserCreationForm):
             'placeholder': 'Ваша должность (необязательно)'
         })
     )
+
+    def send_verification_email(self, request, user):
+        """Отправка письма для подтверждения email"""
+        token = default_token_generator.make_token(user)
+        uid = urlsafe_base64_encode(force_bytes(user.pk))
+        
+        # Ссылка для подтверждения
+        verification_url = f"{settings.SITE_URL}/accounts/verify-email/{uid}/{token}/"
+        
+        # Тема письма
+        subject = 'Подтверждение email - NeuroElcom'
+        
+        html_message = render_to_string('accounts/email/verification_email.html', {
+            'user': user,
+            'verification_url': verification_url,
+            'site_name': 'NeuroElcom'
+        })
+        
+        plain_message = f"""
+        Здравствуйте, {user.username}!
+        
+        Для подтверждения вашего email перейдите по ссылке:
+        {verification_url}
+        
+        Если вы не регистрировались на сайте NeuroElcom, просто проигнорируйте это письмо.
+        
+        С уважением,
+        Команда NeuroElcom
+        """
+        
+        send_mail(
+            subject,
+            plain_message,
+            settings.DEFAULT_FROM_EMAIL,
+            [user.email],
+            html_message=html_message,
+            fail_silently=False,
+        )
     
     class Meta:
         model = User
@@ -154,9 +202,6 @@ class CustomAuthenticationForm(forms.Form):
     username = forms.CharField(
         label='Имя пользователя или Email',
         required=True,
-        error_messages={
-            'required': 'Введите имя пользователя или email',
-        },
         widget=forms.TextInput(attrs={
             'class': 'form-control',
             'placeholder': 'Имя пользователя или Email'
@@ -165,9 +210,6 @@ class CustomAuthenticationForm(forms.Form):
     password = forms.CharField(
         label='Пароль',
         required=True,
-        error_messages={
-            'required': 'Введите пароль',
-        },
         widget=forms.PasswordInput(attrs={
             'class': 'form-control',
             'placeholder': 'Пароль'
@@ -181,24 +223,50 @@ class CustomAuthenticationForm(forms.Form):
         
         if username and password:
             from django.contrib.auth import authenticate
+            
             user = authenticate(username=username, password=password)
+            
             if not user:
-                # Пробуем найти по email
                 try:
                     user_obj = User.objects.get(email=username)
                     user = authenticate(username=user_obj.username, password=password)
                 except User.DoesNotExist:
                     pass
-                
+            
             if not user:
-                # Вместо raise forms.ValidationError используем add_error
-                # чтобы поле подсветилось красным
-                self.add_error('username', 'Неверное имя пользователя или пароль')
-                self.add_error('password', '')
-            else:
-                self.user = user
+                raise forms.ValidationError('Неверное имя пользователя/email или пароль')
+            
+            self.user = user
         
         return cleaned_data
     
     def get_user(self):
         return getattr(self, 'user', None)
+    
+class CustomPasswordResetForm(PasswordResetForm):
+    def send_mail(self, subject_template_name, email_template_name,
+                  context, from_email, to_email, html_email_template_name=None):
+        """
+        Переопределяем метод отправки письма.
+        Используем нашу проверенную логику с явным указанием from_email.
+        """
+        # from_email либо из переданного, либо из настроек
+        from_email = from_email or settings.DEFAULT_FROM_EMAIL or 'elcomneuro@elcomspb.ru'
+        
+        subject = render_to_string(subject_template_name, context)
+        subject = ''.join(subject.splitlines())
+        
+        # HTML-версия письма
+        html_body = render_to_string(email_template_name, context)
+        
+        # Текстовая версия (простая)
+        plain_body = f"Для сброса пароля перейдите по ссылке:\n{context['protocol']}://{context['domain']}{context['uid']}/{context['token']}/"
+        
+        send_mail(
+            subject=subject,
+            message=plain_body,
+            from_email=from_email, 
+            recipient_list=[to_email],
+            html_message=html_body,
+            fail_silently=False,
+        )

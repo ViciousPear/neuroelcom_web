@@ -1,0 +1,263 @@
+/* ===== УВЕЛИЧЕННЫЕ СТИЛИ ДЛЯ МОДАЛЬНОГО ОКНА PDF ===== */
+
+/* Увеличиваем модальное окно PDF */
+#pdfModal .modal-content {
+    width: 98%;
+    max-width: 2000px; /* Увеличено с 1400px */
+    height: 95vh;
+    margin: 1% auto;
+    padding: 30px;
+}
+
+/* Увеличиваем область просмотра PDF */
+#pdfPreview {
+    min-height: 650px; /* Увеличено с 400px */
+    max-height: 70vh;
+    background: #f5f5f5;
+    border: 2px solid #ddd;
+    border-radius: 12px;
+    padding: 20px;
+}
+
+/* Контейнер для canvas PDF с большими размерами */
+#pdfPreview .canvas-container {
+    min-height: 600px;
+    max-height: 65vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Увеличиваем canvas PDF для лучшего качества */
+#pdfPreview canvas {
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+    -ms-interpolation-mode: nearest-neighbor;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    border-radius: 8px;
+}
+
+/* Увеличиваем панель инструментов PDF */
+#pdfModal .pdf-toolbar {
+    padding: 18px 25px;
+    margin-top: 20px;
+    background: #f8f9fa;
+    border-radius: 12px;
+    border: 1px solid #e0e0e0;
+}
+
+#pdfModal .tool-btn {
+    padding: 12px 22px;
+    font-size: 16px;
+    border-radius: 8px;
+}
+
+/* Увеличиваем боковую панель PDF */
+#pdfModal .pdf-sidebar {
+    width: 350px; /* Увеличено с 280px */
+}
+
+#pdfModal .sidebar-section {
+    padding: 20px;
+    border-radius: 12px;
+}
+
+#pdfModal .action-btn {
+    padding: 15px 25px;
+    font-size: 16px;
+    border-radius: 8px;
+}
+
+/* Увеличиваем кнопки действий PDF */
+#convertFullPage, #convertSelection {
+    padding: 15px 25px;
+    font-size: 16px;
+    margin-bottom: 12px;
+}
+
+/* Увеличиваем селектор формата */
+#pdfModal .format-selector {
+    margin-top: 20px;
+}
+
+#pdfModal .format-select {
+    padding: 12px 15px;
+    font-size: 15px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+}
+
+#pdfModal .format-label {
+    font-size: 16px;
+    margin-bottom: 8px;
+    color: #555;
+}
+
+/* Увеличиваем миниатюры страниц */
+#pdfModal .page-thumbnails {
+    gap: 15px;
+    padding: 15px 5px;
+}
+
+#pdfModal .thumbnail {
+    width: 100px; /* Увеличено с 85px */
+    height: 140px; /* Увеличено с 120px */
+    border-width: 3px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+#pdfModal .thumbnail:hover {
+    transform: translateY(-5px) scale(1.05);
+    box-shadow: 0 8px 20px rgba(42, 113, 121, 0.3);
+    border-color: #2A7179;
+}
+
+#pdfModal .thumbnail.active {
+    border-color: #2A7179;
+    box-shadow: 0 0 0 3px rgba(42, 113, 121, 0.3);
+}
+
+#pdfModal .thumbnail div {
+    font-size: 14px;
+    padding: 6px;
+    background: rgba(42, 113, 121, 0.9);
+}
+
+/* Увеличиваем счетчик страниц */
+#pdfModal .page-counter {
+    font-size: 16px;
+    padding: 8px 15px;
+    background: #fff;
+    border-radius: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+/* Увеличиваем заголовки */
+#pdfModal .section-title {
+    font-size: 1.4rem;
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+}
+
+/* Улучшаем скролл для миниатюр */
+#pdfModal .thumbnails-scroll-container {
+    padding-bottom: 15px;
+    margin-bottom: 25px;
+}
+
+#pdfModal .thumbnails-scroll-container::-webkit-scrollbar {
+    height: 10px;
+}
+
+#pdfModal .thumbnails-scroll-container::-webkit-scrollbar-thumb {
+    background: #2A7179;
+    border-radius: 5px;
+}
+
+/* Адаптивность для больших экранов */
+@media (min-width: 2200px) {
+    #pdfModal .modal-content {
+        max-width: 2400px;
+    }
+    
+    #pdfPreview {
+        min-height: 850px;
+    }
+    
+    #pdfModal .thumbnail {
+        width: 120px;
+        height: 168px;
+    }
+}
+
+/* Для планшетов и ноутбуков */
+@media (max-width: 1600px) {
+    #pdfModal .modal-content {
+        max-width: 1800px;
+    }
+    
+    #pdfPreview {
+        min-height: 550px;
+    }
+}
+
+@media (max-width: 1200px) {
+    #pdfModal .modal-content {
+        width: 95%;
+        padding: 20px;
+    }
+    
+    #pdfPreview {
+        min-height: 500px;
+    }
+    
+    #pdfModal .pdf-sidebar {
+        width: 300px;
+    }
+    
+    #pdfModal .thumbnail {
+        width: 85px;
+        height: 120px;
+    }
+}
+
+@media (max-width: 992px) {
+    #pdfModal .pdf-main-container {
+        flex-direction: column;
+    }
+    
+    #pdfModal .pdf-sidebar {
+        width: 100%;
+        margin-top: 20px;
+    }
+    
+    #pdfModal .pdf-toolbar {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    #pdfPreview {
+        min-height: 450px;
+    }
+}
+
+@media (max-width: 768px) {
+    #pdfModal .modal-content {
+        padding: 15px;
+    }
+    
+    #pdfPreview {
+        min-height: 400px;
+    }
+    
+    #pdfModal .tool-btn {
+        padding: 10px 16px;
+        font-size: 14px;
+    }
+    
+    #pdfModal .action-btn {
+        padding: 12px 20px;
+        font-size: 14px;
+    }
+    
+    #pdfModal .thumbnail {
+        width: 70px;
+        height: 100px;
+    }
+}
+
+@media (max-width: 576px) {
+    #pdfPreview {
+        min-height: 350px;
+    }
+    
+    #pdfModal .thumbnail {
+        width: 60px;
+        height: 85px;
+    }
+    
+    #pdfModal .page-counter {
+        font-size: 14px;
+    }
+}
