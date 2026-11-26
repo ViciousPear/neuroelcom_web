@@ -11,6 +11,7 @@ colorama==0.4.6
 cryptography==45.0.5
 cssselect2==0.8.0
 Django==5.2.4
+django-anymail==15.0
 dotenv==0.9.9
 fonttools==4.58.5
 gunicorn==23.0.0
@@ -23,6 +24,7 @@ pdf2image==1.17.0
 pdfkit==1.0.0
 pillow==11.3.0
 poppler-utils==0.1.0
+psycopg2-binary==2.9.11
 pycparser==2.22
 pydyf==0.11.0
 pyHanko==0.29.1
@@ -42,9 +44,12 @@ tinycss2==1.4.0
 tinyhtml5==2.0.0
 tzdata==2025.2
 tzlocal==5.3.1
+ua-parser==1.0.1
+ua-parser-builtins==202603
 uritools==5.0.0
 urllib3==2.5.0
+user-agents==2.2.0
 waitress==3.0.2
 webencodings==0.5.1
-xhtml2pdf==0.2.17
 zopfli==0.2.3.post1
+whitenoise

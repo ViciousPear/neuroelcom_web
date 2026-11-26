@@ -1434,8 +1434,8 @@ def create_pdf(request):
 
             # Для Windows обязательно указывание пути к wkhtmltopdf
             config = pdfkit.configuration(
-                wkhtmltopdf=r'C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe'
-                #wkhtmltopdf=r"/usr/local/bin/wkhtmltopdf" " - для хостинга beget
+                # wkhtmltopdf=r'C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe'
+                wkhtmltopdf=r"/usr/bin/wkhtmltopdf"
             )
 
             try:

@@ -1,27 +1,32 @@
 import requests
-import base64
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
+import os
 
 
 """Класс для работы с API"""
 class APIClient:
-    def __init__(self, base_url="http://213.172.24.109:8002"):
-        self.base_url = base_url.rstrip('/')
+    def __init__(self, base_url=None):
+        url = base_url or os.getenv("LOGIC_SERVICE_URL", "http://logic_service:8002")
+        self.base_url = url.rstrip("/")
         self.session = requests.Session()
         self.timeout = 500
-        self.session.trust_env = False 
-        self.session.mount('http://', HTTPAdapter(max_retries=Retry(total=3, backoff_factor=1)))
+        self.session.trust_env = False
 
-        # Настройка повторных попыток и таймаутов
         retry = Retry(
             total=3,
-            backoff_factor=0.1,
-            status_forcelist=[500, 502, 503, 504]
+            backoff_factor=1,
+            status_forcelist=[502, 503, 504],
+            allowed_methods=["GET", "POST"],
         )
         adapter = HTTPAdapter(max_retries=retry)
-        self.session.mount('http://', adapter)
-        self.session.mount('https://', adapter)
+        self.session.mount("http://", adapter)
+
+    def post(self, endpoint, **kwargs):
+        kwargs.setdefault("timeout", self.timeout)
+        response = self.session.post(f"{self.base_url}/{endpoint.lstrip('/')}", **kwargs)
+        response.raise_for_status()
+        return response
     
     def detect_image(self, image_path):
         """Отправка изображения на удаленный сервер для обработки"""

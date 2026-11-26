@@ -28,7 +28,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['127.0.0.1', 'pythonanywhere.viciouspear.com']
+ALLOWED_HOSTS = ['127.0.0.1', 'neuroelcom.elcomspb.ru', '213.172.24.109']
 
 
 # Application definition
@@ -47,6 +47,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -127,13 +128,11 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
-
-TIME_ZONE = 'UTC'
-
+LANGUAGE_CODE = 'ru-ru'
+TIME_ZONE = 'Europe/Moscow'
 USE_I18N = True
-
 USE_TZ = True
+
 
 
 # Static files (CSS, JavaScript, Images)
@@ -150,9 +149,9 @@ MEDIA_URL = '/media/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-IS_PRODUCTION = 'pythonanywhere.com' in os.environ.get('HTTP_HOST', '')
+IS_PRODUCTION = False
 
-DEBUG = not IS_PRODUCTION
+DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
 
 # Настройки для статических файлов
 STATIC_URL = '/static/'
@@ -193,4 +192,4 @@ DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL')
 os.getenv
 
 # URL сайта для ссылок в письмах (для разработки)
-SITE_URL = 'http://127.0.0.1:8000'
+SITE_URL = 'http://neuroelcom.elcomspb.ru'
